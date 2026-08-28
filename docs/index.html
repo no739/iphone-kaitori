@@ -788,8 +788,9 @@ let changeShop = null, changeLimit = 10;   // null=未選択(★があればお�
 async function buildChanges(){
   try{
     let all = DB.changeList || [];
-    // マイ端末が登録されていれば、その端末の変更だけに絞る
+    // マイ端末×★業者に絞る(Discord通知と同じ範囲)。未登録の項目は絞らない
     if(myDevices.length) all = all.filter(c => isMine(c.key));
+    if(favs.length) all = all.filter(c => isFav(c.shop));
     const ul = document.getElementById("changelist");
     const more = document.getElementById("morechanges");
     if(!all.length){
