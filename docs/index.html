@@ -564,19 +564,19 @@ function setupScrollHint(){
     requestAnimationFrame(frame);
   }
 
-  // パターンC1: 業者列が右から順に滑り込んでくる
+  // パターンC1: 列が右から順に滑り込んでくる(2列目以降すべて・スマホでも見えるように)
   function columnSlideIn(){
     const style = document.createElement("style");
-    let css = "@keyframes colin{from{transform:translateX(48px);opacity:0}to{transform:translateX(0);opacity:1}}";
-    for(let i = 6; i <= 16; i++){
-      css += `#pricetable.slidein td:nth-child(${i}),#pricetable.slidein th:nth-child(${i}){animation:colin .45s ease-out both;animation-delay:${(i-6)*85}ms}`;
+    let css = "@keyframes colin{from{transform:translateX(90px);opacity:0}to{transform:translateX(0);opacity:1}}";
+    for(let i = 2; i <= 12; i++){
+      css += `#pricetable.slidein td:nth-child(${i}),#pricetable.slidein th:nth-child(${i}){animation:colin .55s cubic-bezier(.22,.9,.35,1) both;animation-delay:${(i-2)*110}ms}`;
     }
-    css += `#pricetable.slidein td:nth-child(n+17),#pricetable.slidein th:nth-child(n+17){animation:colin .45s ease-out both;animation-delay:${11*85}ms}`;
+    css += `#pricetable.slidein td:nth-child(n+13),#pricetable.slidein th:nth-child(n+13){animation:colin .55s cubic-bezier(.22,.9,.35,1) both;animation-delay:${11*110}ms}`;
     style.textContent = css;
     document.head.appendChild(style);
     const t = document.getElementById("pricetable");
     t.classList.add("slidein");
-    setTimeout(() => { t.classList.remove("slidein"); style.remove(); }, 2300);
+    setTimeout(() => { t.classList.remove("slidein"); style.remove(); }, 2600);
   }
 
   // パターンB: ヘッダの各セルを左から順に跳ねさせる(2周)
