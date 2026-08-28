@@ -187,6 +187,12 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   animation:shinex 1.5s ease-in-out 2;
 }
 @keyframes shinex{from{left:-45%}to{left:110%}}
+/* パターンB: ヘッダウェーブ(業者名セルが左→右へ順に跳ねる) */
+@keyframes thwave{
+  0%,100%{transform:translateY(0)}
+  40%{transform:translateY(-6px)}
+}
+thead th.wave{animation:thwave .55s cubic-bezier(.34,1.56,.64,1) both}
 
 footer{background:var(--bg2);margin-top:40px}
 footer .inner{max-width:1024px;margin:0 auto;padding:26px 22px;font-size:12px;color:var(--fg2)}
@@ -495,7 +501,11 @@ async function joinSend(){
 }
 document.getElementById("wh-join").onclick = joinSend;
 
-// ---- 横スクロールのヒント(光のスイープ+ラバーバンドのチラ見せ) ----
+// ---- 横スクロールのヒント演出(パターン切り替え式) ----
+// A: 光のスイープ+ラバーバンドのチラ見せ
+// B: ヘッダウェーブ(業者名セルが左→右へ順に跳ねる)
+const HINT_PATTERN = "B";
+
 function setupScrollHint(){
   const wrap = document.getElementById("tablewrap");
   const hint = document.getElementById("scrollhint");
@@ -531,14 +541,35 @@ function setupScrollHint(){
     requestAnimationFrame(frame);
   }
 
+  // パターンB: ヘッダの各セルを左から順に跳ねさせる(2周)
+  function headerWave(){
+    const ths = [...document.querySelectorAll("#pricetable thead th")];
+    const run = () => {
+      ths.forEach((th, i) => {
+        th.style.animationDelay = (i * 70) + "ms";
+        th.classList.add("wave");
+      });
+      setTimeout(() => ths.forEach(th => {
+        th.classList.remove("wave");
+        th.style.animationDelay = "";
+      }), ths.length * 70 + 700);
+    };
+    run();
+    setTimeout(run, ths.length * 70 + 1100);  // 2周目
+  }
+
   const io = new IntersectionObserver(es => {
     if(!es[0].isIntersecting) return;
     io.disconnect();
     setTimeout(() => {
       if(wrap.scrollLeft > 5) return;  // すでに触っていたら演出しない
-      hint.classList.add("play");      // 光のスイープ(CSSアニメ2回)
-      setTimeout(rubberPeek, 350);
-      setTimeout(() => hint.classList.remove("play"), 3300);
+      if(HINT_PATTERN === "A"){
+        hint.classList.add("play");      // 光のスイープ(CSSアニメ2回)
+        setTimeout(rubberPeek, 350);
+        setTimeout(() => hint.classList.remove("play"), 3300);
+      }else if(HINT_PATTERN === "B"){
+        headerWave();
+      }
     }, 500);
   }, {threshold: 0.25});
   io.observe(wrap);
