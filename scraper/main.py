@@ -322,7 +322,7 @@ def main():
                                    prev_updated, prices)
         if my_devices or my_shops:
             msg += "\n(📱マイ端末×★業者に絞って通知中。全変更はサイトの「最近の変更」へ)"
-        discord.send(msg)
+        discord.send(msg, mention=True)
     elif changes:
         print(f"変更{len(changes)}件はすべてマイ端末×★業者の対象外のため通知なし")
     # 未対応の新機種を検知したら一度だけ通知(検知済みリストで重複防止)
@@ -337,7 +337,7 @@ def main():
                 lines.append(f"　✨ {sample}")
             lines.append("")
             lines.append("👉 比較表に追加するには、Claudeに「**新機種に対応して**」と伝えてください")
-            discord.send("\n".join(lines))
+            discord.send("\n".join(lines), mention=True)
             save_json(seen_path, sorted(seen | {t for t, _ in fresh}))
 
     if new_failures:
@@ -354,7 +354,7 @@ def main():
         y_snap = load_json(os.path.join(daily_dir, f"{y_str}.json"), {})
         discord.send(build_daily_report(nz, shops_by_id, prices,
                                         y_snap.get("prices", {}), now,
-                                        my_devices, my_shops))
+                                        my_devices, my_shops), mention=True)
         save_json(os.path.join(daily_dir, f"{today_str}.json"),
                   {"date": today_str, "prices": prices})
 

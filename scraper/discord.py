@@ -64,8 +64,11 @@ def webhook_urls():
     return list(dict.fromkeys(urls))
 
 
-def send(content=None, embeds=None):
-    """全Webhookへ送信。2000字制限があるので content は分割する。"""
+def send(content=None, embeds=None, mention=False):
+    """全Webhookへ送信。2000字制限があるので content は分割する。
+    mention=True で先頭に@everyoneを付け、赤バッジ+プッシュ通知を発生させる。"""
+    if mention and content:
+        content = "@everyone\n" + content
     urls = webhook_urls()
     if not urls:
         print("[discord] webhook未設定のため通知スキップ")
@@ -86,6 +89,7 @@ def send(content=None, embeds=None):
             payload = {}
             if chunk:
                 payload["content"] = chunk
+                payload["allowed_mentions"] = {"parse": ["everyone"]}
             if embeds and i == 0:
                 payload["embeds"] = embeds
             if not payload:
