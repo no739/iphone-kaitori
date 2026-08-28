@@ -267,8 +267,11 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 }
 #floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
 #floathead th{box-shadow:none}
-#floathead th.sticky{position:relative !important;z-index:2;background:var(--card)}
-#floathead th:not(.sticky){position:static !important}
+#floathead th.sticky{
+  position:relative !important;z-index:5;background:var(--card);
+  box-shadow:6px 0 8px -4px rgba(0,0,0,.45);   /* 下に潜る列との境界を明示 */
+}
+#floathead th:not(.sticky){position:relative !important;z-index:1}
 
 /* 横スクロールを示すリッチな初回演出: 光のスイープ+ラバーバンドのチラ見せ */
 #tablezone{position:relative}
