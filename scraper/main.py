@@ -58,9 +58,32 @@ def key_label(nz, key):
 
 def scrape_all(shops):
     from .shops import SkipShop
+    now = datetime.now(JST)
     prices, status, skipped = {}, {}, set()
     for s in shops:
         sid = s["id"]
+        if s.get("partial"):
+            # Cloudflare等でCIから取得できない業者: ローカルMacがpushした
+            # docs/data/partial/<id>.json を読む(scraper.partial が生成)
+            snap = load_json(os.path.join(DATA, "partial", f"{sid}.json"), {})
+            if snap.get("prices"):
+                fresh = False
+                try:
+                    age = now - datetime.fromisoformat(snap["updated"])
+                    fresh = age < timedelta(hours=4)
+                except (KeyError, ValueError):
+                    pass
+                prices[sid] = snap["prices"]
+                status[sid] = {"ok": fresh,
+                               "error": None if fresh
+                               else "ローカル取得が4時間以上止まっています(Macスリープ中?)"}
+                print(f"[{'ok' if fresh else 'NG'}] {s['name']}: "
+                      f"partial {snap.get('updated', '?')}")
+            else:
+                prices[sid] = {}
+                status[sid] = {"ok": False, "error": "ローカル取得データがまだありません"}
+                print(f"[NG] {s['name']}: partialデータなし")
+            continue
         try:
             best, _ = collect(sid)
             if not best:

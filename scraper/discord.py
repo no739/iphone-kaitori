@@ -11,6 +11,25 @@ import urllib.request
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 
 
+def registry_urls():
+    """サイトから各自登録されたWebhook(Apps Script登録所)を取得。"""
+    import urllib.parse
+    reg = os.environ.get("WEBHOOK_REGISTRY_URL", "").strip()
+    key = os.environ.get("WEBHOOK_REGISTRY_KEY", "").strip()
+    if not (reg and key):
+        return []
+    try:
+        url = f"{reg}?key={urllib.parse.quote(key)}"
+        req = urllib.request.Request(url, headers={"User-Agent": "kaitori-hikaku-bot"})
+        with urllib.request.urlopen(req, timeout=25) as r:
+            data = json.load(r)
+        return [u for u in data.get("webhooks", [])
+                if isinstance(u, str) and u.startswith("https://")]
+    except Exception as e:  # noqa: BLE001
+        print(f"[discord] 登録所からの取得失敗: {e}")
+        return []
+
+
 def webhook_urls():
     urls = []
     env = os.environ.get("DISCORD_WEBHOOKS", "")
@@ -23,6 +42,7 @@ def webhook_urls():
         line = line.strip()
         if line.startswith("https://") and "discord" in line:
             urls.append(line)
+    urls.extend(registry_urls())
     return list(dict.fromkeys(urls))
 
 

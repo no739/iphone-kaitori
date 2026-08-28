@@ -127,6 +127,14 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 .card h3{font-size:17px;font-weight:600;margin-bottom:6px}
 .card p{font-size:13.5px;color:var(--fg2)}
 .card code{background:var(--card);padding:2px 6px;border-radius:6px;font-size:12px}
+#whform input{
+  display:block;width:100%;margin-top:10px;padding:11px 14px;font-size:15px;
+  font-family:inherit;border:1px solid var(--line);border-radius:12px;
+  background:var(--card);color:var(--fg);outline:none;
+}
+#whform input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.formbtns{display:flex;gap:10px;margin-top:14px}
+.whstatus{margin-top:10px;font-size:13px;min-height:1.4em}
 
 footer{background:var(--bg2);margin-top:40px}
 footer .inner{max-width:1024px;margin:0 auto;padding:26px 22px;font-size:12px;color:var(--fg2)}
@@ -171,19 +179,25 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 
 <section class="block" id="notify">
   <h2>Discord通知</h2>
-  <p>価格が変わった時と毎朝11時のまとめを、自分のDiscordで受け取れます。家族・友人も自分のWebhookを追加するだけ。</p>
+  <p>価格が変わった時と毎朝11時のまとめを、自分のDiscordで受け取れます。<b>下のフォームから各自で登録できます</b>(あいことばが必要です)。</p>
   <div class="grid2">
     <div class="card">
       <h3>1. Webhookを作る</h3>
       <p>Discordの通知を受け取りたいチャンネルで<br>「チャンネルの編集 → 連携サービス → ウェブフック → 新しいウェブフック」を作成し、<b>Webhook URLをコピー</b>。</p>
+      <p style="margin-top:8px">届くもの: 価格変更の速報 / 毎朝11時の一覧+前日比 / 取得エラーの警告</p>
     </div>
     <div class="card">
-      <h3>2. URLを登録する</h3>
-      <p>このサイトのGitHubリポジトリで <code>Settings → Secrets and variables → Actions</code> を開き、<code>DISCORD_WEBHOOKS</code> に1行1URLで追記(リポジトリ管理者に送ってもOK)。</p>
-    </div>
-    <div class="card">
-      <h3>3. 届くもの</h3>
-      <p>・価格変更があった時だけ「機種/業者/旧→新」の速報<br>・毎朝11時に全機種の最高値一覧+前日比<br>・取得エラー発生時の警告</p>
+      <h3>2. ここで登録する</h3>
+      <form id="whform" onsubmit="return false">
+        <input type="text" id="wh-name" placeholder="名前(通知の宛名に使うだけ)" autocomplete="off">
+        <input type="url" id="wh-url" placeholder="Webhook URL (https://discord.com/api/webhooks/…)" autocomplete="off" required>
+        <input type="text" id="wh-pass" placeholder="あいことば" autocomplete="off" required>
+        <div class="formbtns">
+          <button class="btn" id="wh-reg">登録する</button>
+          <button class="btn ghost" id="wh-unreg">解除する</button>
+        </div>
+        <p id="wh-status" class="whstatus"></p>
+      </form>
     </div>
   </div>
 </section>
@@ -201,6 +215,9 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 </div></footer>
 
 <script>
+// Discord Webhook 登録所(Google Apps Script)のURL。空の間はフォーム無効。
+const REGISTRY_URL = "";
+
 const fmt = n => n == null ? "—" : n.toLocaleString("ja-JP");
 let DB = null, filter = "all";
 
@@ -336,6 +353,33 @@ function buildFooter(){
   document.getElementById("shoplinks").innerHTML =
     DB.shops.map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.name}</a>`).join("");
 }
+
+// ---- Discord Webhook 登録フォーム ----
+function whStatus(msg, ok){
+  const el = document.getElementById("wh-status");
+  el.textContent = msg;
+  el.style.color = ok ? "var(--up)" : "var(--down)";
+}
+async function whSend(action){
+  if(!REGISTRY_URL){ whStatus("登録所は準備中です。もう少し待ってね。", false); return; }
+  const url = document.getElementById("wh-url").value.trim();
+  const pass = document.getElementById("wh-pass").value.trim();
+  const name = document.getElementById("wh-name").value.trim();
+  if(!/^https:\/\/(discord(app)?\.com)\/api\/webhooks\/\d+\//.test(url)){
+    whStatus("Webhook URLの形式が違います(https://discord.com/api/webhooks/… で始まるURL)", false); return;
+  }
+  if(!pass){ whStatus("あいことばを入力してください", false); return; }
+  whStatus("送信中…", true);
+  try{
+    await fetch(REGISTRY_URL, { method:"POST", mode:"no-cors",
+      body: new URLSearchParams({ action, name, url, aikotoba: pass }) });
+    whStatus(action === "unregister"
+      ? "解除リクエストを送りました。Discordに🔕メッセージが届いていれば解除完了です。"
+      : "送信しました!Discordのチャンネルに✅メッセージが届いていれば登録完了です。1分待っても届かない場合は、あいことばかURLが間違っています。", true);
+  }catch(e){ whStatus("送信に失敗しました。通信環境を確認してもう一度どうぞ。", false); }
+}
+document.getElementById("wh-reg").onclick = () => whSend("register");
+document.getElementById("wh-unreg").onclick = () => whSend("unregister");
 boot();
 </script>
 </body>

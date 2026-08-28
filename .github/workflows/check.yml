@@ -35,6 +35,8 @@ jobs:
           DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
           ENOKING_EMAIL: ${{ secrets.ENOKING_EMAIL }}
           ENOKING_PASSWORD: ${{ secrets.ENOKING_PASSWORD }}
+          WEBHOOK_REGISTRY_URL: ${{ secrets.WEBHOOK_REGISTRY_URL }}
+          WEBHOOK_REGISTRY_KEY: ${{ secrets.WEBHOOK_REGISTRY_KEY }}
         run: python -m scraper.main
 
       - name: データをコミット

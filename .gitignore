@@ -2,4 +2,5 @@ __pycache__/
 *.pyc
 webhooks.txt
 enoking_login.txt
+webhook-registry-setup.gs
 .DS_Store
