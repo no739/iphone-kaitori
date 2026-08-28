@@ -668,9 +668,9 @@ document.getElementById("wh-join").onclick = joinSend;
   // 3匹の隊列(前後にずらし、大きさと歩行テンポを少し変える)
   // 3匹を同じ大きさで横一列に並べる
   const troop = [
-    {x:0,   y:0, s:1, sp:.20},
-    {x:-72, y:0, s:1, sp:.24},
-    {x:-144,y:0, s:1, sp:.18},
+    {x:0,   y:0, s:1, sp:.15},
+    {x:-70, y:0, s:1, sp:.18},
+    {x:-140,y:0, s:1, sp:.13},
   ];
   crab.innerHTML = troop.map(c =>
     `<div class="crabunit" style="transform:translate(${c.x}px,${c.y}px) scale(${c.s});--sp:${c.sp}s">${CRAB_SVG}</div>`
@@ -679,10 +679,10 @@ document.getElementById("wh-join").onclick = joinSend;
   function walk(){
     crab.classList.remove("walk");
     void crab.offsetWidth;                       // アニメをリセット
-    const dur = 6 + Math.random() * 3;           // 6〜9秒でカサカサッと素早く横断
+    const dur = 3.4 + Math.random() * 1.4;       // 3.4〜4.8秒でシュッと素早く横断
     crab.style.setProperty("--ct", dur + "s");
     crab.style.top = (68 + Math.random() * 4) + "vh";  // 画面の7割ほどの高さ
-    crab.style.width = (56 + Math.random() * 12) + "px";
+    crab.style.width = "62px";                    // 3匹とも同じサイズで固定
     crab.style.transform = "";
     crab.classList.add("walk");
     setTimeout(schedule, dur * 1000 + 500);
