@@ -1,0 +1,29 @@
+{
+  "_comment": "新型iPhoneが出たらここに追記するだけで追跡対象になります。capacities のキーはGB表記(1TB=1024, 2TB=2048)、値はApple税込定価(円)。colors を空にするとカラー集約(最高値)で追跡します。",
+  "series": [
+    {
+      "id": "17promax",
+      "name": "iPhone 17 Pro Max",
+      "colors": { "orange": "オレンジ", "blue": "ブルー", "silver": "シルバー" },
+      "capacities": { "256": 194800, "512": 229800, "1024": 264800, "2048": 329800 }
+    },
+    {
+      "id": "17pro",
+      "name": "iPhone 17 Pro",
+      "colors": { "orange": "オレンジ", "blue": "ブルー", "silver": "シルバー" },
+      "capacities": { "256": 179800, "512": 214800, "1024": 249800 }
+    },
+    {
+      "id": "17air",
+      "name": "iPhone 17 Air",
+      "colors": {},
+      "capacities": { "256": 159800, "512": 194800, "1024": 229800 }
+    },
+    {
+      "id": "17",
+      "name": "iPhone 17",
+      "colors": {},
+      "capacities": { "256": 129800, "512": 164800 }
+    }
+  ]
+}

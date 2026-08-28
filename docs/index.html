@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iPhone 買取価格比較</title>
+<meta name="description" content="新品未開封iPhoneの買取価格を20社横断で比較。2時間ごとに自動更新。">
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f5f5f7; --fg:#1d1d1f; --fg2:#6e6e73; --line:#d2d2d7;
+  --accent:#0071e3; --link:#0066cc; --up:#0a7d33; --down:#d70015;
+  --hl:#e9f5ec; --hl-border:#bfe3c8; --nav:rgba(251,251,253,.82); --card:#fff;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#000; --bg2:#161617; --fg:#f5f5f7; --fg2:#a1a1a6; --line:#3a3a3c;
+    --accent:#0a84ff; --link:#2997ff; --up:#30d158; --down:#ff453a;
+    --hl:#12291a; --hl-border:#1f4a2c; --nav:rgba(22,22,23,.8); --card:#1c1c1e;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:"SF Pro JP","SF Pro Display","SF Pro Text","SF Pro Icons",
+    -apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic Pro",
+    "ヒラギノ角ゴ Pro W3",Meiryo,メイリオ,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--fg);
+  font-size:17px; line-height:1.47059; font-weight:400;
+  letter-spacing:-.022em;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ---- global nav (apple風) ---- */
+nav.globalnav{
+  position:sticky;top:0;z-index:50;height:48px;
+  background:var(--nav);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){ nav.globalnav{border-bottom:1px solid rgba(255,255,255,.12)} }
+nav.globalnav .inner{
+  max-width:1024px;margin:0 auto;height:100%;
+  display:flex;align-items:center;gap:28px;padding:0 22px;
+  font-size:12px;letter-spacing:-.01em;overflow-x:auto;scrollbar-width:none;
+}
+nav.globalnav .inner::-webkit-scrollbar{display:none}
+nav.globalnav a{color:var(--fg);opacity:.88;white-space:nowrap}
+nav.globalnav a:hover{opacity:1;text-decoration:none;color:var(--accent)}
+nav.globalnav .logo{font-size:15px;opacity:1}
+
+/* ---- hero ---- */
+header.hero{background:var(--bg2);text-align:center;padding:64px 22px 54px;overflow:hidden}
+header.hero h1{
+  font-size:clamp(34px,6vw,56px);line-height:1.07;font-weight:600;letter-spacing:-.015em;
+}
+header.hero p.sub{font-size:clamp(18px,3vw,24px);margin-top:8px;color:var(--fg2);font-weight:400}
+header.hero p.meta{margin-top:14px;font-size:13px;color:var(--fg2)}
+header.hero .cta{margin-top:20px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-block;background:var(--accent);color:#fff;font-size:15px;
+  padding:9px 20px;border-radius:980px;border:none;cursor:pointer;
+}
+.btn:hover{text-decoration:none;filter:brightness(1.07)}
+.btn.ghost{background:transparent;color:var(--link);border:1px solid var(--link)}
+
+/* ---- segmented model picker ---- */
+.picker{
+  display:flex;gap:8px;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;
+  max-width:1400px;margin:28px auto 0;padding:0 22px;scrollbar-width:none;
+}
+.picker::-webkit-scrollbar{display:none}
+.picker button{
+  font-family:inherit;font-size:14px;letter-spacing:-.01em;
+  padding:8px 18px;border-radius:980px;border:1px solid var(--line);
+  background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap;
+}
+.picker button.active{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+/* ---- table ---- */
+main{max-width:1400px;margin:0 auto;padding:10px 22px 40px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card)}
+table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;letter-spacing:-.01em}
+thead th{
+  position:sticky;top:0;background:var(--card);z-index:3;
+  font-weight:600;color:var(--fg2);font-size:11.5px;
+  padding:12px 10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;
+}
+thead th a{color:inherit}
+thead th.left, td.left{text-align:left}
+th.sticky, td.sticky{position:sticky;left:0;background:var(--card);z-index:2}
+thead th.sticky{z-index:4}
+tbody td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--bg2);white-space:nowrap;font-variant-numeric:tabular-nums}
+tr.group td{
+  background:var(--bg2);font-weight:600;font-size:14px;text-align:left;
+  padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;z-index:1;
+}
+td.max{background:var(--hl);box-shadow:inset 0 0 0 1px var(--hl-border);border-radius:6px;font-weight:600}
+td .d{display:block;font-size:10.5px;font-weight:500;line-height:1.2}
+.d.up{color:var(--up)} .d.down{color:var(--down)}
+td.dim{color:var(--fg2)}
+td.na{color:var(--line)}
+th.stale{color:var(--down)}
+.rate{font-size:11px;color:var(--fg2)}
+.colorname{font-weight:500}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.dot.orange{background:#e8762c}.dot.blue{background:#2c4d7c}.dot.silver{background:#c8c9ce;border:1px solid #aaa}
+
+/* ---- sections ---- */
+section.block{max-width:1024px;margin:0 auto;padding:48px 22px}
+section.block h2{font-size:clamp(24px,4vw,36px);font-weight:600;letter-spacing:-.015em;margin-bottom:14px}
+section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
+.changes{list-style:none;font-size:13.5px}
+.changes li{padding:9px 0;border-bottom:1px solid var(--bg2);display:flex;gap:10px;flex-wrap:wrap}
+.changes .t{color:var(--fg2);min-width:96px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:18px}
+.card{background:var(--bg2);border-radius:18px;padding:22px}
+.card h3{font-size:17px;font-weight:600;margin-bottom:6px}
+.card p{font-size:13.5px;color:var(--fg2)}
+.card code{background:var(--card);padding:2px 6px;border-radius:6px;font-size:12px}
+
+footer{background:var(--bg2);margin-top:40px}
+footer .inner{max-width:1024px;margin:0 auto;padding:26px 22px;font-size:12px;color:var(--fg2)}
+footer .inner p{margin-bottom:8px}
+footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
+#loading{text-align:center;color:var(--fg2);padding:60px 0}
+</style>
+</head>
+<body>
+
+<nav class="globalnav"><div class="inner">
+  <a class="logo" href="#top"></a>
+  <a href="#table">価格比較</a>
+  <a href="#changes">最近の変更</a>
+  <a href="#notify">Discord通知</a>
+  <a href="#about">このサイトについて</a>
+</div></nav>
+
+<header class="hero" id="top">
+  <h1>iPhone 買取価格比較</h1>
+  <p class="sub">新品未開封。20社を、2時間ごとに。</p>
+  <p class="meta" id="updated">読み込み中…</p>
+  <div class="cta">
+    <a class="btn" href="#table">価格を見る</a>
+    <a class="btn ghost" href="#notify">通知を設定する</a>
+  </div>
+</header>
+
+<main id="table">
+  <div class="picker" id="picker"></div>
+  <div id="loading">価格データを読み込んでいます…</div>
+  <div class="tablewrap" id="tablewrap" style="display:none">
+    <table id="pricetable"></table>
+  </div>
+</main>
+
+<section class="block" id="changes">
+  <h2>最近の変更</h2>
+  <p>直近の巡回で検知した価格変更(最新50件)。</p>
+  <ul class="changes" id="changelist"></ul>
+</section>
+
+<section class="block" id="notify">
+  <h2>Discord通知</h2>
+  <p>価格が変わった時と毎朝11時のまとめを、自分のDiscordで受け取れます。家族・友人も自分のWebhookを追加するだけ。</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>1. Webhookを作る</h3>
+      <p>Discordの通知を受け取りたいチャンネルで<br>「チャンネルの編集 → 連携サービス → ウェブフック → 新しいウェブフック」を作成し、<b>Webhook URLをコピー</b>。</p>
+    </div>
+    <div class="card">
+      <h3>2. URLを登録する</h3>
+      <p>このサイトのGitHubリポジトリで <code>Settings → Secrets and variables → Actions</code> を開き、<code>DISCORD_WEBHOOKS</code> に1行1URLで追記(リポジトリ管理者に送ってもOK)。</p>
+    </div>
+    <div class="card">
+      <h3>3. 届くもの</h3>
+      <p>・価格変更があった時だけ「機種/業者/旧→新」の速報<br>・毎朝11時に全機種の最高値一覧+前日比<br>・取得エラー発生時の警告</p>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="about">
+  <h2>このサイトについて</h2>
+  <p>11時〜19時の2時間おき(1日5回)に各買取業者の公式サイトから新品未開封iPhoneの買取価格を自動取得しています。緑のセルはその行の最高値。価格の下の▲▼は前回巡回からの変動です。</p>
+  <p>新しいiPhoneが発売されたら <code>config/models.json</code> に1機種追記するだけで自動的に追跡対象になります。</p>
+</section>
+
+<footer><div class="inner">
+  <p>本サイトは個人運用の非公式比較サイトです。価格は各社サイトの掲載値を機械的に収集したもので、実際の買取価格・条件(カラー減額、利用制限、開封状態の判定など)は必ず各社の公式サイトでご確認ください。</p>
+  <p>掲載業者:</p>
+  <div class="links" id="shoplinks"></div>
+</div></footer>
+
+<script>
+const fmt = n => n == null ? "—" : n.toLocaleString("ja-JP");
+let DB = null, filter = "all";
+
+async function boot(){
+  const res = await fetch("data/latest.json?" + Date.now());
+  DB = await res.json();
+  const up = new Date(DB.updated);
+  document.getElementById("updated").textContent =
+    "更新日時: " + up.toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) +
+    " (11〜19時の2時間おきに自動更新)";
+  buildPicker(); buildTable(); buildChanges(); buildFooter();
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("tablewrap").style.display = "";
+}
+
+function buildPicker(){
+  const p = document.getElementById("picker");
+  const mk = (id, label) => {
+    const b = document.createElement("button");
+    b.textContent = label; b.dataset.id = id;
+    if(id === filter) b.classList.add("active");
+    b.onclick = () => { filter = id; buildPicker(); buildTable(); };
+    return b;
+  };
+  p.replaceChildren(mk("all","すべて"), ...DB.series.map(s => mk(s.id, s.name)));
+}
+
+function keyRows(){
+  // [ {key, series, capLabel, color} ] 表の行(モデル→容量→カラー)
+  const rows = [];
+  for(const s of DB.series){
+    if(filter !== "all" && filter !== s.id) continue;
+    const colors = Object.keys(s.colors || {});
+    for(const cap of Object.keys(s.capacities)){
+      const capI = parseInt(cap,10);
+      const capLabel = capI >= 1024 ? (capI/1024) + "TB" : capI + "GB";
+      const group = {series:s, capLabel, list:[], listPrice:s.capacities[cap]};
+      if(colors.length){
+        for(const c of colors)
+          group.list.push({key:`${s.id}-${capI}-${c}`, color:c, colorName:s.colors[c]});
+      }else{
+        group.list.push({key:`${s.id}-${capI}`, color:null, colorName:"—"});
+      }
+      rows.push(group);
+    }
+  }
+  return rows;
+}
+
+function cell(shopId, key){
+  const p = (DB.prices[shopId]||{})[key];
+  const prev = (DB.prev[shopId]||{})[key];
+  if(p == null) return {p:null, d:null};
+  return {p, d:(prev!=null && prev!==p) ? p-prev : null};
+}
+
+function buildTable(){
+  const shops = DB.shops;
+  const t = document.getElementById("pricetable");
+  let html = "<thead><tr>";
+  html += '<th class="left sticky">カラー</th><th>定価</th><th>最高値</th><th>差額</th><th>買取率</th>';
+  for(const s of shops){
+    const stale = !s.ok;
+    html += `<th${stale?' class="stale" title="取得エラー: 前回値を表示中"':''}><a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a></th>`;
+  }
+  html += "</tr></thead><tbody>";
+
+  for(const g of keyRows()){
+    html += `<tr class="group"><td class="sticky" colspan="2">${g.series.name} ${g.capLabel}</td><td colspan="${3+shops.length}"></td></tr>`;
+    for(const row of g.list){
+      const cells = shops.map(s => ({shop:s, ...cell(s.id,row.key)}));
+      const max = Math.max(...cells.map(c => c.p ?? 0));
+      const diff = max ? max - g.listPrice : null;
+      const rate = max ? (max / g.listPrice * 100) : null;
+      html += "<tr>";
+      const dotCls = row.color ? `<span class="dot ${row.color}"></span>` : "";
+      html += `<td class="left sticky colorname">${dotCls}${row.colorName}</td>`;
+      html += `<td class="dim">${fmt(g.listPrice)}</td>`;
+      html += `<td class="max">${max?fmt(max):"—"}</td>`;
+      html += diff==null ? '<td class="na">—</td>' :
+        `<td class="${diff>=0?'':'dim'}">${diff>0?"+":""}${fmt(diff)}</td>`;
+      html += rate==null ? '<td class="na">—</td>' :
+        `<td class="rate">${rate.toFixed(1)}%</td>`;
+      for(const c of cells){
+        if(c.p == null){ html += '<td class="na">0</td>'; continue; }
+        const isMax = c.p === max;
+        let d = "";
+        if(c.d != null)
+          d = `<span class="d ${c.d>0?'up':'down'}">${c.d>0?"▲":"▼"}${fmt(Math.abs(c.d))}</span>`;
+        html += `<td${isMax?' class="max"':''}>${fmt(c.p)}${d}</td>`;
+      }
+      html += "</tr>";
+    }
+  }
+  html += "</tbody>";
+  t.innerHTML = html;
+}
+
+function labelOf(key){
+  const [sid, cap, color] = key.split("-");
+  const s = DB.series.find(x => x.id === sid);
+  if(!s) return key;
+  const capI = parseInt(cap,10);
+  const capLabel = capI >= 1024 ? (capI/1024)+"TB" : capI+"GB";
+  return `${s.name} ${capLabel}${color?" "+(s.colors[color]||color):""}`;
+}
+
+async function buildChanges(){
+  try{
+    const res = await fetch("data/changes.json?" + Date.now());
+    const list = await res.json();
+    const ul = document.getElementById("changelist");
+    if(!list.length){ ul.innerHTML = "<li>まだ変更履歴はありません。</li>"; return; }
+    const shopName = id => (DB.shops.find(s=>s.id===id)||{}).name || id;
+    ul.innerHTML = list.slice(0,50).map(c=>{
+      const up = c.new > c.old;
+      const t = new Date(c.ts).toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+      return `<li><span class="t">${t}</span><span>${labelOf(c.key)}</span>` +
+        `<span>${shopName(c.shop)}</span>` +
+        `<span class="d ${up?'up':'down'}">${fmt(c.old)} → ${fmt(c.new)} (${up?"+":""}${fmt(c.new-c.old)})</span></li>`;
+    }).join("");
+  }catch(e){ /* 履歴なしでもOK */ }
+}
+
+function buildFooter(){
+  document.getElementById("shoplinks").innerHTML =
+    DB.shops.map(s=>`<a href="${s.url}" target="_blank" rel="noopener">${s.name}</a>`).join("");
+}
+boot();
+</script>
+</body>
+</html>

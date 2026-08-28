@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+webhooks.txt
+.DS_Store
