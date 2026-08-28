@@ -828,8 +828,10 @@ let fhRebuild = null;
     if(show !== last.show){ holder.style.display = show ? "block" : "none"; last.show = show; }
     if(!show) return;
     if(pad !== last.pad){
-      holder.style.top = "0px";
-      holder.style.paddingTop = pad + "px";
+      // iOS Safariは固定要素を画面上端より下に置く瞬間があり、その隙間にページが透ける。
+      // ヘッダを画面外(上)へ70px突き抜けさせて、隙間ごと覆う。
+      holder.style.top = pad ? "-70px" : "0px";
+      holder.style.paddingTop = (pad ? pad + 70 : 0) + "px";
       last.pad = pad;
     }
     const L = Math.round(r.left), W = Math.round(r.width);
@@ -840,11 +842,18 @@ let fhRebuild = null;
   // スクロールごとではなく描画フレームごとに1回だけ計算する(カクつき防止)
   let raf = 0;
   const onScroll = () => { if(!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); };
-  // 横は1フレームの遅れも見えるので即時同期(計算が軽いためカクつかない)
+  // 横スクロール中: 位置計算はせず、ヘッダの横位置合わせだけを行う(軽量)
   wrap.addEventListener("scroll", () => {
     if(holder.scrollLeft !== wrap.scrollLeft) holder.scrollLeft = wrap.scrollLeft;
-    onScroll();
   }, {passive:true});
+  // ヘッダ表示中の横ホイールは、表とヘッダを同一フレームで動かして遅れゼロにする
+  wrap.addEventListener("wheel", (e) => {
+    if(holder.style.display !== "block") return;
+    if(Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    wrap.scrollLeft += e.deltaX;
+    holder.scrollLeft = wrap.scrollLeft;
+  }, {passive:false});
   addEventListener("scroll", onScroll, {passive:true});
   addEventListener("resize", () => { fhRebuild(); last = {show:null, pad:-1, left:-1, width:-1}; sync(); });
   setTimeout(() => { fhRebuild(); sync(); }, 800);
