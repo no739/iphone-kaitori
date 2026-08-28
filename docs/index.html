@@ -113,15 +113,14 @@ header.hero .cta{margin-top:20px;display:flex;gap:16px;justify-content:center;fl
 /* ---- table ---- */
 main{max-width:1400px;margin:0 auto;padding:10px 22px 40px}
 .tablewrap{
-  overflow-x:auto;      /* 横だけ表の中でスクロール */
-  overflow-y:clip;      /* 縦はページと一体化: 表の端でスクロールが詰まるのを防ぐ */
-  overscroll-behavior-x:contain;
+  overflow-x:auto;      /* 横だけ表の中でスクロール(縦はページと一体化=詰まらない) */
   border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card);
   /* 表の端まで行ったらページ全体のスクロールに自然に繋がる(閉じ込めない) */
 }
 table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;letter-spacing:-.01em}
 thead th{
   position:sticky;top:0;background:var(--card);z-index:3;
+  box-shadow:0 1px 0 var(--line);
   font-weight:600;color:var(--fg2);font-size:11.5px;
   padding:12px 10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;
 }
@@ -236,6 +235,15 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   .changes li>span:not(.t){margin-right:8px}
   .formbtns .btn{flex:1;text-align:center}
 }
+
+/* 画面上部に追従する業者名ヘッダ(表が長くてもどの業者か分かる) */
+#floathead{
+  position:fixed;z-index:45;display:none;overflow:hidden;pointer-events:none;
+  background:var(--card);border-bottom:1px solid var(--line);
+  box-shadow:0 3px 10px rgba(0,0,0,.16);border-radius:0;
+}
+#floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
+#floathead th{position:static !important;box-shadow:none}
 
 /* 横スクロールを示すリッチな初回演出: 光のスイープ+ラバーバンドのチラ見せ */
 #tablezone{position:relative}
@@ -729,6 +737,48 @@ async function joinSend(){
   }catch(e){ whStatus("送信に失敗しました。通信環境を確認してもう一度どうぞ。", false); }
 }
 document.getElementById("wh-join").onclick = joinSend;
+
+// ---- 業者名ヘッダを画面上部に追従表示(PC/スマホ共通) ----
+let fhRebuild = null;
+(() => {
+  const wrap = document.getElementById("tablewrap");
+  const table = document.getElementById("pricetable");
+  const holder = document.createElement("div");
+  holder.id = "floathead";
+  const inner = document.createElement("div");
+  holder.appendChild(inner);
+  document.body.appendChild(holder);
+
+  fhRebuild = () => {
+    if(!table.tHead) return;
+    const clone = table.cloneNode(false);
+    clone.appendChild(table.tHead.cloneNode(true));
+    clone.style.width = table.offsetWidth + "px";
+    const src = table.tHead.rows[0].cells, dst = clone.tHead.rows[0].cells;
+    for(let i = 0; i < src.length; i++){
+      dst[i].style.width = src[i].getBoundingClientRect().width + "px";
+      dst[i].style.boxSizing = "border-box";
+    }
+    inner.replaceChildren(clone);
+  };
+  const sync = () => {
+    const r = wrap.getBoundingClientRect();
+    const headH = table.tHead ? table.tHead.getBoundingClientRect().height : 0;
+    // 表のヘッダが画面外に出ていて、まだ表の途中なら追従ヘッダを出す
+    const show = r.top < 0 && r.bottom > headH + 80;
+    holder.style.display = show ? "block" : "none";
+    if(show){
+      holder.style.top = "0px";
+      holder.style.left = r.left + "px";
+      holder.style.width = r.width + "px";
+      inner.style.transform = `translateX(${-wrap.scrollLeft}px)`;
+    }
+  };
+  wrap.addEventListener("scroll", sync, {passive:true});
+  addEventListener("scroll", sync, {passive:true});
+  addEventListener("resize", () => { fhRebuild(); sync(); });
+  setTimeout(() => { fhRebuild(); sync(); }, 800);
+})();
 
 // ---- 遊び心: たまにカニが画面下をカサカサ横断する ----
 (() => {
