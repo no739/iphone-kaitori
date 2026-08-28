@@ -59,7 +59,9 @@ def key_label(nz, key):
 def scrape_all(shops):
     from .shops import SkipShop
     now = datetime.now(JST)
+    now_iso = now.isoformat(timespec="seconds")
     prices, status, skipped = {}, {}, set()
+    observed = {}  # sid -> その価格を実際に確認した時刻(取得失敗ならNone)
     for s in shops:
         sid = s["id"]
         if s.get("partial"):
@@ -74,6 +76,7 @@ def scrape_all(shops):
                 except (KeyError, ValueError):
                     pass
                 prices[sid] = snap["prices"]
+                observed[sid] = snap.get("updated")
                 status[sid] = {"ok": fresh,
                                "error": None if fresh
                                else "ローカル取得が4時間以上止まっています(Macスリープ中?)"}
@@ -89,6 +92,7 @@ def scrape_all(shops):
             if not best:
                 raise RuntimeError("商品を1件も抽出できませんでした(ページ構造変更の可能性)")
             prices[sid] = best
+            observed[sid] = now_iso
             status[sid] = {"ok": True, "error": None}
             print(f"[ok] {s['name']}: {len(best)} items")
         except SkipShop as e:
@@ -96,9 +100,10 @@ def scrape_all(shops):
             print(f"[skip] {s['name']}: {e}")
         except Exception as e:  # noqa: BLE001
             prices[sid] = {}
+            observed[sid] = None
             status[sid] = {"ok": False, "error": str(e)[:300]}
             print(f"[NG] {s['name']}: {e}")
-    return prices, status, skipped
+    return prices, status, skipped, observed
 
 
 def detect_changes(prev_prices, prices, status):
@@ -133,9 +138,17 @@ def build_change_message(nz, shops_by_id, changes, now, prev_updated=None):
     for c in sorted(changes, key=lambda c: (c["key"], c["shop"]))[:80]:
         arrow = "▲" if c["new"] > c["old"] else "▼"
         diff = c["new"] - c["old"]
-        lines.append(f"{arrow} {key_label(nz, c['key'])} | "
-                     f"{shops_by_id[c['shop']]['name']} "
-                     f"{fmt_yen(c['old'])} → **{fmt_yen(c['new'])}** ({diff:+,})")
+        line = (f"{arrow} {key_label(nz, c['key'])} | "
+                f"{shops_by_id[c['shop']]['name']} "
+                f"{fmt_yen(c['old'])} → **{fmt_yen(c['new'])}** ({diff:+,})")
+        # この業者だけ比較元が古い場合(取得失敗が続いていた等)は注記
+        if c.get("prev_ts") and prev_updated and c["prev_ts"] != prev_updated:
+            try:
+                pt = datetime.fromisoformat(c["prev_ts"]).strftime("%m/%d %H:%M")
+                line += f" ※{pt}時点比"
+            except ValueError:
+                pass
+        lines.append(line)
     if len(changes) > 80:
         lines.append(f"…ほか {len(changes) - 80} 件(サイト参照)")
     return "\n".join(lines)
@@ -194,9 +207,18 @@ def main():
     prev_prices = prev.get("prices", {})
     prev_status = prev.get("status", {})
 
-    prices, status, skipped = scrape_all(shops)
+    prices, status, skipped, observed = scrape_all(shops)
     shops = [s for s in shops if s["id"] not in skipped]
     shops_by_id = {s["id"]: s for s in shops}
+
+    # 業者ごとの「価格を最後に実際に確認した時刻」。取得失敗時は前回値を引き継ぐ
+    prev_shop_updated = prev.get("shop_updated", {})
+    shop_updated = {}
+    for s in shops:
+        sid = s["id"]
+        shop_updated[sid] = (observed.get(sid)
+                             or prev_shop_updated.get(sid)
+                             or prev.get("updated"))
 
     # 失敗した業者は前回価格を引き継ぐ(サイトには「更新停止中」表示用のstatusを渡す)
     for sid in list(prices):
@@ -217,8 +239,18 @@ def main():
         print("new failures:", new_failures)
         return
 
-    # ---- 通知 ----
+    # ---- 変更レコードに観測時刻を付与(通知・履歴の両方で使う) ----
     prev_updated = prev.get("updated")
+    ts = now.isoformat(timespec="seconds")
+    for c in changes:
+        # 新価格を確認した時刻(Mac取得分は実際の取得時刻)
+        c["ts"] = shop_updated.get(c["shop"]) or ts
+        # 旧価格を最後に確認した時刻(業者ごと。失敗が続いていた業者は古くなる)
+        pt = prev_shop_updated.get(c["shop"]) or prev_updated
+        if pt:
+            c["prev_ts"] = pt
+
+    # ---- 通知 ----
     if changes:
         discord.send(build_change_message(nz, shops_by_id, changes, now, prev_updated))
     if new_failures:
@@ -240,11 +272,6 @@ def main():
 
     # ---- 保存 (サイト用データ) ----
     changes_log = load_json(os.path.join(DATA, "changes.json"), [])
-    ts = now.isoformat(timespec="seconds")
-    for c in changes:
-        c["ts"] = ts
-        if prev_updated:
-            c["prev_ts"] = prev_updated  # 変更前の価格を観測した時刻
     changes_log = (changes + changes_log)[:300]
 
     daily_files = sorted(os.listdir(daily_dir))[-30:] if os.path.isdir(daily_dir) else []
@@ -259,6 +286,7 @@ def main():
                    "error": status[s["id"]]["error"]} for s in shops],
         "prices": prices,
         "prev": prev_prices,
+        "shop_updated": shop_updated,
         "yesterday": y_snap.get("prices", {}),
         "daily_files": daily_files,
     })

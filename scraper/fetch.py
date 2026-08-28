@@ -39,6 +39,12 @@ def get(url, session=None, retries=3, wait=5, timeout=40, **kw):
 _PW = {"browser": None, "ctx": None}
 
 
+def playwright_browser():
+    """共有のChromiumインスタンス(遅延起動)。"""
+    playwright_ctx()
+    return _PW["browser"]
+
+
 def playwright_ctx():
     """共有のヘッドレスChromiumコンテキスト(遅延起動)。"""
     from playwright.sync_api import sync_playwright

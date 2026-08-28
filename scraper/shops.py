@@ -112,25 +112,40 @@ def enoking():
     """会員ログイン必須(Cloudflare保護)。Playwrightでログインして取得。
     認証情報は ENOKING_EMAIL / ENOKING_PASSWORD か enoking_login.txt(1行目メール, 2行目パスワード)。
     """
+    import os
+    from .fetch import UA, playwright_browser, playwright_ctx
+    state_path = os.path.join(os.path.dirname(__file__), "..", "enoking_state.json")
+    has_state = os.path.exists(state_path)
     email, password = _enoking_creds()
-    if not (email and password):
+    if not (has_state or (email and password)):
         raise SkipShop("エノキングの認証情報が未設定")
-    from .fetch import playwright_ctx
     cats = {  # カテゴリID(サイトのナビから取得)
         "17promax": "ef369420-782f-4343-a8fe-12cc875842ab",
         "17pro": "a97f234d-feb0-4c64-ad65-1c1174f43f12",
         "17": "1f133399-5164-42a5-83e5-370e3e882f0f",
         "17air": "0bb59efb-68a5-4b2e-b380-fca0fc593a88",
     }
-    ctx = playwright_ctx()
+    own_ctx = None
+    if has_state:
+        # ユーザーが scraper.enoking_setup で保存したログイン状態を使う
+        own_ctx = playwright_browser().new_context(
+            storage_state=state_path, locale="ja-JP", user_agent=UA,
+            viewport={"width": 1280, "height": 900})
+        ctx = own_ctx
+    else:
+        ctx = playwright_ctx()
     page = ctx.new_page()
     offers = []
     try:
-        # ---- ログイン(既にセッションがあればスキップされる) ----
+        # ---- ログイン(セッションが生きていればフォームは出ない) ----
         page.goto("https://newenoking-kaitori.com/login",
                   wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(2500)
         if page.locator("#email").count():
+            if not (email and password):
+                raise RuntimeError(
+                    "エノキングのセッションが切れました。Macで "
+                    "`python3 -m scraper.enoking_setup` を実行して再ログインしてください")
             page.fill("#email", email)
             page.fill("#password", password)
             page.click("button:has-text('ログイン')")
@@ -142,13 +157,10 @@ def enoking():
             body = page.content()
             if "パスワード" in body and page.locator("#email").count():
                 # まだログインフォームが出ている = 失敗
-                err = ""
-                for sel in (".error", "[class*=error]", "[role=alert]"):
-                    if page.locator(sel).count():
-                        err = page.locator(sel).first.inner_text()[:100]
-                        break
-                raise RuntimeError(f"エノキングにログインできませんでした"
-                                   f"(url={page.url} エラー表示={err or 'なし'})")
+                raise RuntimeError(
+                    "エノキングにログインできませんでした(メール/パスワード不一致)。"
+                    "Macで `python3 -m scraper.enoking_setup` を実行して"
+                    "手動ログインで保存し直すのが確実です")
         # ---- カテゴリごとに価格取得 ----
         for cat_id in cats.values():
             page.goto(f"https://newenoking-kaitori.com/products?cat={cat_id}",
@@ -184,8 +196,13 @@ def enoking():
                 f"エノキング: 価格を抽出できず (url={page.url} "
                 f"商品名={n_names}件 問い合わせ表示={'問い合わせ' in html} "
                 f"ログアウト表示={'ログアウト' in html})")
+        if own_ctx is not None:
+            # セッションを延命(成功するたびに保存し直す)
+            own_ctx.storage_state(path=state_path)
     finally:
         page.close()
+        if own_ctx is not None:
+            own_ctx.close()
     return offers
 
 
