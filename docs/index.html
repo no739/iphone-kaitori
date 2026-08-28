@@ -32,24 +32,44 @@ body{
 a{color:var(--link);text-decoration:none}
 a:hover{text-decoration:underline}
 
-/* ---- global nav (apple風) ---- */
-nav.globalnav{
-  position:sticky;top:0;z-index:50;height:48px;
+/* ---- ハンバーガーメニュー(スマートヘッダー: 下スクロールで隠れ、上スクロールで出る) ---- */
+#menubtn{
+  position:fixed;top:14px;left:14px;z-index:70;
+  width:46px;height:46px;border-radius:50%;border:1px solid var(--line);
   background:var(--nav);
   -webkit-backdrop-filter:saturate(180%) blur(20px);
   backdrop-filter:saturate(180%) blur(20px);
-  border-bottom:1px solid rgba(0,0,0,.08);
+  box-shadow:0 4px 14px rgba(0,0,0,.14);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;
+  cursor:pointer;
+  transition:transform .32s cubic-bezier(.4,0,.2,1), opacity .32s;
 }
-@media (prefers-color-scheme: dark){ nav.globalnav{border-bottom:1px solid rgba(255,255,255,.12)} }
-nav.globalnav .inner{
-  max-width:1024px;margin:0 auto;height:100%;
-  display:flex;align-items:center;justify-content:center;gap:28px;padding:0 22px;
-  font-size:12px;letter-spacing:-.01em;overflow-x:auto;scrollbar-width:none;
+#menubtn span{
+  display:block;width:17px;height:2px;border-radius:2px;background:var(--fg);
+  transition:transform .28s cubic-bezier(.4,0,.2,1), opacity .2s;
 }
-nav.globalnav .inner::-webkit-scrollbar{display:none}
-nav.globalnav a{color:var(--fg);opacity:.88;white-space:nowrap}
-nav.globalnav a:hover{opacity:1;text-decoration:none;color:var(--accent)}
-nav.globalnav .logo{font-size:15px;opacity:1}
+#menubtn.hidebtn{transform:translateY(-76px);opacity:0;pointer-events:none}
+#menubtn.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+#menubtn.open span:nth-child(2){opacity:0}
+#menubtn.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+#menupanel{
+  position:fixed;top:68px;left:14px;z-index:69;min-width:200px;
+  background:var(--nav);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 10px 34px rgba(0,0,0,.22);
+  padding:8px;display:flex;flex-direction:column;
+  opacity:0;transform:translateY(-8px) scale(.96);transform-origin:top left;
+  pointer-events:none;
+  transition:opacity .22s, transform .22s cubic-bezier(.34,1.3,.64,1);
+}
+#menupanel.open{opacity:1;transform:none;pointer-events:auto}
+#menupanel a{
+  color:var(--fg);font-size:14.5px;padding:11px 14px;border-radius:10px;
+  text-decoration:none;
+}
+#menupanel a:hover{background:var(--bg2);color:var(--accent)}
 
 /* ---- hero ---- */
 header.hero{background:var(--bg2);text-align:center;padding:64px 22px 54px;overflow:hidden}
@@ -148,8 +168,8 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 
 /* ---- モバイル調整 ---- */
 @media (max-width: 640px){
-  nav.globalnav .inner{justify-content:space-between;gap:6px;padding:0 16px;font-size:11px}
-  nav.globalnav a{flex:0 1 auto}
+  #menubtn{top:10px;left:10px;width:42px;height:42px}
+  #menupanel{top:60px;left:10px}
   /* スマホは表の縦スクロールをページと一体化(iOSで上下に引っかかる問題の根治)。
      機種ごと表示になったので表が短く、ヘッダ固定なしでも実用上困らない */
   .tablewrap{max-height:none}
@@ -205,12 +225,13 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 </head>
 <body>
 
-<nav class="globalnav"><div class="inner">
+<button id="menubtn" aria-label="メニュー"><span></span><span></span><span></span></button>
+<div id="menupanel">
   <a href="#table">価格比較</a>
   <a href="#changes">最近の変更</a>
   <a href="#notify">Discord通知</a>
   <a href="#about">このサイトについて</a>
-</div></nav>
+</div>
 
 <header class="hero" id="top">
   <h1>iPhone 買取価格比較</h1>
@@ -527,6 +548,33 @@ async function joinSend(){
   }catch(e){ whStatus("送信に失敗しました。通信環境を確認してもう一度どうぞ。", false); }
 }
 document.getElementById("wh-join").onclick = joinSend;
+
+// ---- ハンバーガーメニュー(下スクロールで隠れ、上スクロールで現れる) ----
+(() => {
+  const btn = document.getElementById("menubtn");
+  const panel = document.getElementById("menupanel");
+  const toggle = (open) => {
+    const o = open ?? !panel.classList.contains("open");
+    panel.classList.toggle("open", o);
+    btn.classList.toggle("open", o);
+  };
+  btn.onclick = (e) => { e.stopPropagation(); toggle(); };
+  panel.querySelectorAll("a").forEach(a => a.onclick = () => toggle(false));
+  document.addEventListener("click", (e) => {
+    if(!panel.contains(e.target) && e.target !== btn) toggle(false);
+  });
+  let lastY = scrollY;
+  addEventListener("scroll", () => {
+    const y = scrollY;
+    if(y > lastY + 6 && y > 90){        // 下へ → 隠す(メニューも閉じる)
+      btn.classList.add("hidebtn");
+      toggle(false);
+    }else if(y < lastY - 6 || y < 60){  // 上へ or 先頭付近 → 出す
+      btn.classList.remove("hidebtn");
+    }
+    lastY = y;
+  }, {passive:true});
+})();
 
 // ---- 横スクロールのヒント演出(パターン切り替え式) ----
 // A: 光のスイープ+ラバーバンドのチラ見せ
