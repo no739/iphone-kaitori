@@ -84,7 +84,7 @@ main{max-width:1400px;margin:0 auto;padding:10px 22px 40px}
 .tablewrap{
   overflow:auto;max-height:82vh;  /* 縦横スクロールを表の中に閉じ込め、ヘッダ行を固定(スプレッドシートの固定と同じ挙動) */
   border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card);
-  overscroll-behavior:contain;
+  /* 表の端まで行ったらページ全体のスクロールに自然に繋がる(閉じ込めない) */
 }
 table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;letter-spacing:-.01em}
 thead th{
