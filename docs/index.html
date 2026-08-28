@@ -269,8 +269,12 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   box-shadow:0 3px 10px rgba(0,0,0,.3);border-radius:0;
   isolation:isolate;   /* 下の表が透けて見えないよう独立した重なり層にする */
 }
-/* ヘッダ帯を上方向に伸ばして、画面最上部まで表と同じ色で塞ぐ */
-#floathead{padding-top:120px;margin-top:-120px}
+/* 画面最上部(時計・電波のあたり)を常に塞ぐ帯。表がその下を通り抜けても覗かない */
+#topmask{
+  position:fixed;top:0;left:0;right:0;z-index:61;pointer-events:none;
+  height:calc(env(safe-area-inset-top, 0px) + 8px);
+  background:var(--bg);
+}
 #floathead table{background:var(--card)}
 #floathead th{background:var(--card) !important}
 #floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
@@ -347,6 +351,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 </head>
 <body>
 
+<div id="topmask" aria-hidden="true"></div>
 <div id="crab" aria-hidden="true"></div>
 <button id="menubtn" aria-label="メニュー"><span></span><span></span><span></span></button>
 <div id="menuscrim"></div>
@@ -842,7 +847,7 @@ let fhRebuild = null;
     bar.classList.remove("on");   // ピル方式は不採用
     holder.style.display = show ? "block" : "none";
     if(show){
-      holder.style.top = "0px";
+      holder.style.top = "calc(env(safe-area-inset-top, 0px) + 8px)";
       holder.style.left = r.left + "px";
       holder.style.width = r.width + "px";
       inner.style.transform = `translateX(${-wrap.scrollLeft}px)`;
