@@ -46,6 +46,13 @@ jobs:
             echo "変更なし"
           else
             git commit -m "価格データ更新 $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M')"
-            git pull --rebase origin main
+            # 他のpushと競合したら、生成データは今回の値を正としてrebase
+            git pull --rebase -X theirs origin main || {
+              git rebase --abort
+              git fetch origin main
+              git reset --soft origin/main
+              git add docs/data
+              git commit -m "価格データ更新 $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M')"
+            }
             git push
           fi
