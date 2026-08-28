@@ -168,6 +168,15 @@ thead th .fav:active{transform:scale(1.3)}
 /* 外した業者が移動する前に1秒ハイライトして分かるようにする */
 thead th.favout{animation:favout 1s ease-out}
 thead th.favin{animation:favin 1s ease-out}
+.dfav{
+  display:inline-block;margin-right:6px;cursor:pointer;color:var(--fg2);opacity:.5;
+  font-size:14px;position:relative;-webkit-tap-highlight-color:transparent;
+}
+.dfav::after{content:"";position:absolute;left:-10px;right:-6px;top:-11px;bottom:-11px}
+.dfav.on{color:var(--up);opacity:1;font-weight:700}
+.dfav:active{transform:scale(1.3)}
+tr.rowin td{animation:favin 1s ease-out}
+tr.rowout td{animation:favout 1s ease-out}
 @keyframes favin{0%,60%{background:color-mix(in srgb,var(--accent) 30%,transparent)}100%{background:transparent}}
 @keyframes favout{0%,60%{background:color-mix(in srgb,var(--down) 30%,transparent)}100%{background:transparent}}
 thead th.favflash{animation:favflash .5s ease-out}
@@ -255,7 +264,7 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   thead th{padding:10px 7px 7px;font-size:10.5px}
   td.max{font-size:12.5px}
   tr.group td{font-size:13px;padding:9px 10px}
-  td.left.sticky{max-width:118px;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+  td.left.sticky{max-width:134px;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
   tr.group td.gtitle{overflow:visible;text-overflow:clip;font-size:13px}
   .changes li{display:block;padding:11px 0}
   .changes .t{display:block;min-width:0;font-size:11.5px;margin-bottom:3px}
@@ -477,7 +486,9 @@ async function boot(){
   ]);
   DB = await res.json();
   // スマホは全機種表示だと長すぎるので、初期表示を先頭の機種(Pro Max)に絞る
-  if(matchMedia("(max-width: 640px)").matches && filter === "all" && DB.series.length){
+  if(myDevices.length){
+    filter = "mine";
+  }else if(matchMedia("(max-width: 640px)").matches && filter === "all" && DB.series.length){
     filter = DB.series[0].id;
   }
   try{
@@ -499,6 +510,7 @@ async function boot(){
     `新品未開封。${DB.shops.length}社を、2時間ごとに。`;
   buildPicker(); buildTable(); buildFavBar(); buildChanges(); buildFooter();
   document.getElementById("loading").style.display = "none";
+  pullPrefs();   // 共有保存所の★(マイ端末/業者)を取り込み、変化があれば再描画
   document.getElementById("tablewrap").style.display = "";
   // 表の描画が終わって本当の高さが確定したら、位置を合わせ直してダミーの高さを解除
   if(performance.now() < 3000){
@@ -516,19 +528,19 @@ function buildPicker(){
     b.textContent = compact ? label.replace(/^iPhone\s*/, "") : label;
     b.dataset.id = id;
     if(id === filter) b.classList.add("active");
-    b.onclick = () => { filter = id; buildPicker(); buildTable(); };
+    b.onclick = () => { window.__userPicked = true; filter = id; buildPicker(); buildTable(); };
     return b;
   };
-  // スマホでは「すべて」を出さない(機種ごとに見る前提)
-  const heads = compact ? [] : [mk("all","すべて")];
-  p.replaceChildren(...heads, ...DB.series.map(s => mk(s.id, s.name)));
+  const mine = mk("mine", `📱マイ端末${myDevices.length ? `(${myDevices.length})` : ""}`);
+  p.replaceChildren(mine, mk("all","すべて"), ...DB.series.map(s => mk(s.id, s.name)));
 }
 
 function keyRows(){
   // [ {key, series, capLabel, color} ] 表の行(モデル→容量→カラー)
   const rows = [];
+  const mineView = filter === "mine";
   for(const s of DB.series){
-    if(filter !== "all" && filter !== s.id) continue;
+    if(!mineView && filter !== "all" && filter !== s.id) continue;
     const colors = Object.keys(s.colors || {});
     for(const cap of Object.keys(s.capacities)){
       const capI = parseInt(cap,10);
@@ -539,6 +551,10 @@ function keyRows(){
           group.list.push({key:`${s.id}-${capI}-${c}`, color:c, colorName:s.colors[c]});
       }else{
         group.list.push({key:`${s.id}-${capI}`, color:null, colorName:"—"});
+      }
+      if(mineView){
+        group.list = group.list.filter(r => isMine(r.key));
+        if(!group.list.length) continue;
       }
       rows.push(group);
     }
@@ -565,6 +581,60 @@ function yesterdayMax(key){
   return m;
 }
 
+// ---- マイ端末(持ってる端末の行に★) ----
+let myDevices = [];
+try{ myDevices = JSON.parse(localStorage.getItem("mydevices") || "[]"); if(!Array.isArray(myDevices)) myDevices = []; }catch(e){}
+const isMine = k => myDevices.includes(k);
+function saveDevices(){ try{ localStorage.setItem("mydevices", JSON.stringify(myDevices)); }catch(e){} }
+
+// ★の共有保存所(Apps Script)と同期: スマホ/PC/家族間で同じ一覧を共有し、
+// Discord通知の絞り込み(マイ端末×★業者)にも使われる
+function pushPrefs(){
+  try{
+    const fd = new URLSearchParams();
+    fd.set("action", "set_prefs");
+    fd.set("devices", JSON.stringify(myDevices));
+    fd.set("shops", JSON.stringify(favs));
+    fetch(REGISTRY_URL, {method:"POST", body:fd, mode:"no-cors"});
+  }catch(e){}
+}
+async function pullPrefs(){
+  try{
+    const r = await fetch(REGISTRY_URL + "?action=prefs");
+    const j = await r.json();
+    let changed = false;
+    if(j && j.ok){
+      if(Array.isArray(j.devices) && j.devices.length && JSON.stringify(j.devices) !== JSON.stringify(myDevices)){
+        myDevices = j.devices; saveDevices(); changed = true;
+      }
+      if(Array.isArray(j.shops) && j.shops.length && JSON.stringify(j.shops) !== JSON.stringify(favs)){
+        favs = j.shops; saveFavs(); changed = true;
+      }
+    }
+    if(changed){
+      if(myDevices.length && !window.__userPicked) filter = "mine";
+      buildPicker(); buildTable(); buildFavBar(); buildChanges();
+    }
+  }catch(e){}
+}
+
+function toggleDevice(key, el){
+  const removing = isMine(key);
+  myDevices = removing ? myDevices.filter(k => k !== key) : [...myDevices, key];
+  saveDevices(); pushPrefs();
+  const refresh = () => { buildPicker(); buildTable(); if(typeof buildChanges === "function") buildChanges(); };
+  if(el){
+    el.textContent = removing ? "＋" : "✓";
+    el.classList.toggle("on", !removing);
+    const tr = el.closest("tr");
+    if(tr) tr.classList.add(removing ? "rowout" : "rowin");
+    if(navigator.vibrate) navigator.vibrate(10);
+    setTimeout(refresh, 1000);
+  }else{
+    refresh();
+  }
+}
+
 // ---- お気に入り業者(★) ----
 // FAV_MODE: A=★を左に固定 / B=★だけ表示の切替 / AB=両方 / off=無効
 const FAV_MODE = (new URLSearchParams(location.search).get("fav") || "A").toUpperCase();
@@ -578,7 +648,7 @@ function saveFavs(){
 function toggleFav(id, el){
   const removing = isFav(id);
   favs = removing ? favs.filter(x => x !== id) : [...favs, id];
-  saveFavs();
+  saveFavs(); pushPrefs();
   const refresh = () => {
     buildTable(); buildFavBar();
     if(typeof buildChanges === "function") buildChanges();
@@ -612,11 +682,7 @@ function buildFavBar(){
   if(!bar) return;
   if(FAV_MODE === "OFF"){ bar.style.display = "none"; return; }
   bar.style.display = "";
-  const hint = FAV_MODE === "A"
-    ? "業者名を長押しすると★が付き、その業者が左端に固定されます"
-    : FAV_MODE === "B"
-    ? "業者名を長押しでお気に入り登録。下のボタンで表示を切り替えます"
-    : "業者名を長押しで左端に固定。下のボタンでお気に入りだけ表示にできます";
+  const hint = "業者名の横の☆で業者を左端に固定 / 行の「＋」で持っている端末を登録(📱マイ端末に表示・Discord通知もその組み合わせに絞られます)";
   let html = `<span class="favhint">${hint}</span>`;
   if(FAV_MODE === "B" || FAV_MODE === "AB"){
     html += `<button id="favtoggle" class="btn ghost">${favOnly ? "全21社を表示" : `お気に入りだけ表示${favs.length?`(${favs.length})`:""}`}</button>`;
@@ -659,7 +725,8 @@ function buildTable(){
       const rate = max ? (max / g.listPrice * 100) : null;
       html += "<tr>";
       const dotCls = row.color ? `<span class="dot ${row.color}"></span>` : "";
-      html += `<td class="left sticky colorname">${dotCls}${row.colorName}</td>`;
+      const dstar = `<span class="dfav${isMine(row.key)?" on":""}" data-mydev="${row.key}" role="button" aria-label="マイ端末">${isMine(row.key)?"✓":"＋"}</span>`;
+      html += `<td class="left sticky colorname">${dstar}${dotCls}${row.colorName}</td>`;
       html += `<td class="dim">${fmt(g.listPrice)}</td>`;
       let ycmp = "";
       const ymax = yesterdayMax(row.key);
@@ -687,12 +754,22 @@ function buildTable(){
     }
   }
   html += "</tbody>";
+  if(filter === "mine" && !myDevices.length){
+    html = '<tbody><tr><td style="padding:26px 18px;color:var(--fg2);white-space:normal">まだマイ端末がありません。機種を選んで、持っている端末の行の「＋」をタップすると登録されます(カラー単位)。</td></tr></tbody>';
+  }
   t.innerHTML = html;
   // ☆タップでお気に入りの登録/解除(業者名タップは通常どおりサイトへ)
   t.querySelectorAll("[data-fav]").forEach(el => {
     el.addEventListener("click", (e) => {
       e.preventDefault(); e.stopPropagation();
       toggleFav(el.dataset.fav, el);
+    });
+  });
+  // 行の☆でマイ端末の登録/解除(カラー単位)
+  t.querySelectorAll("[data-mydev]").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      toggleDevice(el.dataset.mydev, el);
     });
   });
 }
@@ -709,10 +786,19 @@ function labelOf(key){
 let changeShop = null, changeLimit = 10;   // null=未選択(★があればお気に入り優先)
 async function buildChanges(){
   try{
-    const all = DB.changeList || [];
+    let all = DB.changeList || [];
+    // マイ端末が登録されていれば、その端末の変更だけに絞る
+    if(myDevices.length) all = all.filter(c => isMine(c.key));
     const ul = document.getElementById("changelist");
     const more = document.getElementById("morechanges");
-    if(!all.length){ ul.innerHTML = "<li>まだ変更履歴はありません。</li>"; return; }
+    if(!all.length){
+      ul.innerHTML = myDevices.length
+        ? "<li>マイ端末の価格変更はまだありません。</li>"
+        : "<li>まだ変更履歴はありません。</li>";
+      document.getElementById("shoppicker").replaceChildren();
+      document.getElementById("morechanges").style.display = "none";
+      return;
+    }
     const shopName = id => (DB.shops.find(s=>s.id===id)||{}).name || id;
 
     // 業者フィルター(件数バッジつき)

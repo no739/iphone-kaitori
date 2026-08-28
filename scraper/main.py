@@ -191,10 +191,12 @@ def build_change_message(nz, shops_by_id, changes, now, prev_updated=None,
     return "\n".join(lines)
 
 
-def best_by_capacity(nz, prices):
-    """{series-cap: (最高値, shop_id)} カラーは最高値に集約。"""
+def best_by_capacity(nz, prices, shop_filter=None):
+    """{series-cap: (最高値, shop_id)} カラーは最高値に集約。shop_filterで業者を限定可。"""
     out = {}
     for sid, cur in prices.items():
+        if shop_filter and sid not in shop_filter:
+            continue
         for key, p in cur.items():
             base = "-".join(key.split("-")[:2])
             if base not in out or p > out[base][0]:
@@ -202,15 +204,25 @@ def best_by_capacity(nz, prices):
     return out
 
 
-def build_daily_report(nz, shops_by_id, prices, y_prices, now):
-    today = best_by_capacity(nz, prices)
-    yesterday = best_by_capacity(nz, y_prices) if y_prices else {}
-    lines = [f"**☀️ 今日の買取価格一覧** ({now.strftime('%Y/%m/%d')} 11:00 時点・各社最高値)"]
+def build_daily_report(nz, shops_by_id, prices, y_prices, now,
+                       my_devices=None, my_shops=None):
+    shop_filter = set(my_shops) if my_shops else None
+    bases = {"-".join(k.split("-")[:2]) for k in (my_devices or [])}
+    today = best_by_capacity(nz, prices, shop_filter)
+    yesterday = best_by_capacity(nz, y_prices, shop_filter) if y_prices else {}
+    scope = "★業者内の最高値" if shop_filter else "各社最高値"
+    title = f"**☀️ 今日の買取価格一覧** ({now.strftime('%Y/%m/%d')} 11:00 時点・{scope})"
+    if bases:
+        title += "\n📱 マイ端末のみ表示(全機種はサイトでどうぞ)"
+    lines = [title]
     lines.append("")
     for sr in nz.series:
+        n0 = len(lines)
         for cap in sr["capacities"]:
             base = f"{sr['id']}-{int(cap)}"
             if base not in today:
+                continue
+            if bases and base not in bases:
                 continue
             p, sid = today[base]
             cap_i = int(cap)
@@ -222,7 +234,8 @@ def build_daily_report(nz, shops_by_id, prices, y_prices, now):
                 mark = "▲" if d > 0 else ("▼" if d < 0 else "→")
                 line += f"  前日比 {mark}{d:+,}円" if d else "  前日比 ±0"
             lines.append(line)
-        lines.append("")
+        if len(lines) > n0:
+            lines.append("")   # その機種で1行以上出た時だけ区切りを入れる
     ng = [s for s in shops_by_id.values() if not s.get("_ok", True)]
     if ng:
         lines.append("⚠️ 価格取得に失敗した業者: " + "、".join(s["name"] for s in ng))
@@ -288,9 +301,21 @@ def main():
             c["prev_ts"] = pt
 
     # ---- 通知 ----
-    if changes:
-        discord.send(build_change_message(nz, shops_by_id, changes, now,
-                                          prev_updated, prices))
+    # サイトで登録された「マイ端末/★業者」(家族共有)。未登録なら全件通知
+    my_devices, my_shops = discord.fetch_prefs()
+    notify_changes = changes
+    if my_devices:
+        notify_changes = [c for c in notify_changes if c["key"] in my_devices]
+    if my_shops:
+        notify_changes = [c for c in notify_changes if c["shop"] in my_shops]
+    if notify_changes:
+        msg = build_change_message(nz, shops_by_id, notify_changes, now,
+                                   prev_updated, prices)
+        if my_devices or my_shops:
+            msg += "\n(📱マイ端末×★業者に絞って通知中。全変更はサイトの「最近の変更」へ)"
+        discord.send(msg)
+    elif changes:
+        print(f"変更{len(changes)}件はすべてマイ端末×★業者の対象外のため通知なし")
     # 未対応の新機種を検知したら一度だけ通知(検知済みリストで重複防止)
     if unknowns:
         seen_path = os.path.join(DATA, "new_models_seen.json")
@@ -319,7 +344,8 @@ def main():
         y_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
         y_snap = load_json(os.path.join(daily_dir, f"{y_str}.json"), {})
         discord.send(build_daily_report(nz, shops_by_id, prices,
-                                        y_snap.get("prices", {}), now))
+                                        y_snap.get("prices", {}), now,
+                                        my_devices, my_shops))
         save_json(os.path.join(daily_dir, f"{today_str}.json"),
                   {"date": today_str, "prices": prices})
 

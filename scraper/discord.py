@@ -11,6 +11,24 @@ import urllib.request
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 
 
+def fetch_prefs():
+    """サイトで登録された「マイ端末/★業者」(家族共有)を取得。
+    失敗・未登録時は空リスト=絞り込みなしで従来どおり全件通知。"""
+    reg = os.environ.get("WEBHOOK_REGISTRY_URL", "").strip()
+    if not reg:
+        return [], []
+    try:
+        req = urllib.request.Request(f"{reg}?action=prefs",
+                                     headers={"User-Agent": "kaitori-bot"})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            j = json.loads(r.read().decode())
+        if j.get("ok"):
+            return list(j.get("devices") or []), list(j.get("shops") or [])
+    except Exception as e:  # noqa: BLE001
+        print("prefs取得失敗(絞り込みなしで続行):", e)
+    return [], []
+
+
 def registry_urls():
     """サイトから各自登録されたWebhook(Apps Script登録所)を取得。"""
     import urllib.parse
