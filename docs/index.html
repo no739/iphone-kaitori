@@ -610,8 +610,8 @@ function setupScrollHint(){
       }else if(HINT_PATTERN === "C1"){
         columnSlideIn();
       }else if(HINT_PATTERN === "C2"){
-        // 2段チラ見せ: 浅く→深く
-        rubberPeek(65, () => setTimeout(() => rubberPeek(180), 200));
+        // 2段チラ見せ: 同じ浅さで2回(トン、トン)
+        rubberPeek(65, () => setTimeout(() => rubberPeek(65), 200));
       }
     }, 500);
   }, {threshold: 0.25});
