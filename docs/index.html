@@ -159,6 +159,9 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 .changes{list-style:none;font-size:13.5px}
 .changes li{padding:9px 0;border-bottom:1px solid var(--bg2);display:flex;gap:10px;flex-wrap:wrap}
 .changes .t{color:var(--fg2);min-width:230px;font-variant-numeric:tabular-nums}
+#shoppicker{margin:0 0 14px;padding:0}
+#shoppicker button{font-size:13px;padding:6px 14px}
+#morechanges{margin-top:14px;font-size:14px;padding:8px 18px}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:18px}
 .card{background:var(--bg2);border-radius:18px;padding:22px}
 .card h3{font-size:17px;font-weight:600;margin-bottom:6px}
@@ -264,8 +267,10 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 
 <section class="block" id="changes">
   <h2>最近の変更</h2>
-  <p>直近の巡回で検知した価格変更(最新50件)。時刻は「変更前の価格を確認した時点 → 変更を検知した時点」です。</p>
+  <p>直近の巡回で検知した価格変更。時刻は「変更前の価格を確認した時点 → 変更を検知した時点」です。</p>
+  <div class="picker" id="shoppicker"></div>
   <ul class="changes" id="changelist"></ul>
+  <button id="morechanges" class="btn ghost" style="display:none">もっと見る</button>
 </section>
 
 <section class="block" id="notify">
@@ -511,14 +516,39 @@ function labelOf(key){
   return `${s.name} ${capLabel}${color?" "+(s.colors[color]||color):""}`;
 }
 
+let changeShop = "all", changeLimit = 10;
 async function buildChanges(){
   try{
-    const list = DB.changeList || [];
+    const all = DB.changeList || [];
     const ul = document.getElementById("changelist");
-    if(!list.length){ ul.innerHTML = "<li>まだ変更履歴はありません。</li>"; return; }
+    const more = document.getElementById("morechanges");
+    if(!all.length){ ul.innerHTML = "<li>まだ変更履歴はありません。</li>"; return; }
     const shopName = id => (DB.shops.find(s=>s.id===id)||{}).name || id;
+
+    // 業者フィルター(件数バッジつき)
+    const counts = {};
+    for(const c of all) counts[c.shop] = (counts[c.shop] || 0) + 1;
+    const picker = document.getElementById("shoppicker");
+    const mkS = (id, label, n) => {
+      const b = document.createElement("button");
+      b.textContent = n != null ? `${label} ${n}` : label;
+      if(id === changeShop) b.classList.add("active");
+      b.onclick = () => { changeShop = id; changeLimit = 10; buildChanges(); };
+      return b;
+    };
+    picker.replaceChildren(
+      mkS("all", "すべて", all.length),
+      ...DB.shops.filter(s => counts[s.id])
+        .sort((a,b) => counts[b.id] - counts[a.id])
+        .map(s => mkS(s.id, s.name, counts[s.id])));
+
+    const list = changeShop === "all" ? all : all.filter(c => c.shop === changeShop);
+    more.style.display = list.length > changeLimit ? "" : "none";
+    more.textContent = `もっと見る(残り${Math.max(0, list.length - changeLimit)}件)`;
+    more.onclick = () => { changeLimit += 20; buildChanges(); };
+
     const short = iso => new Date(iso).toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-    ul.innerHTML = list.slice(0,50).map(c=>{
+    ul.innerHTML = list.slice(0, changeLimit).map(c=>{
       const up = c.new > c.old;
       // 「どの時点の価格 → どの時点の価格」を両方フル時刻で明示する
       let t = `${short(c.ts)}時点で検知`;
@@ -529,7 +559,7 @@ async function buildChanges(){
         `<span>${shopName(c.shop)}</span>` +
         `<span class="d ${up?'up':'down'}">${fmt(c.old)} → ${fmt(c.new)} (${up?"+":""}${fmt(c.new-c.old)})</span></li>`;
     }).join("");
-  }catch(e){ /* 履歴なしでもOK */ }
+  }catch(e){ console.warn("changes render failed", e); }
 }
 
 function buildFooter(){
