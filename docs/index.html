@@ -670,14 +670,16 @@ async function buildChanges(){
       b.onclick = () => { changeShop = id; changeLimit = 10; buildChanges(); };
       return b;
     };
-    const favCount = all.filter(c => isFav(c.shop)).length;
-    // 未選択なら、★を付けていればお気に入りのみを初期表示に
-    if(changeShop === null) changeShop = (favs.length && favCount) ? "fav" : "all";
+    // ★を付けた業者を個別ボタンとして並べる(★の順序を維持)
+    const favShops = favs.map(id => DB.shops.find(s => s.id === id)).filter(Boolean);
+    if(changeShop === null || (changeShop !== "all" && !favs.includes(changeShop))){
+      changeShop = "all";
+    }
     picker.replaceChildren(
       mkS("all", "すべて", all.length),
-      mkS("fav", "お気に入りのみ", favCount));
+      ...favShops.map(s => mkS(s.id, s.name, counts[s.id] || 0)));
 
-    const list = changeShop === "fav" ? all.filter(c => isFav(c.shop)) : all;
+    const list = changeShop === "all" ? all : all.filter(c => c.shop === changeShop);
     more.style.display = list.length > changeLimit ? "" : "none";
     more.textContent = `もっと見る(残り${Math.max(0, list.length - changeLimit)}件)`;
     more.onclick = () => { changeLimit += 20; buildChanges(); };
