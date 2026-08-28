@@ -127,10 +127,14 @@ thead th a{color:inherit}
 thead th.shop .sname{color:var(--accent);font-weight:600}
 thead th.stale .sname{color:var(--down)}
 thead th.shop .slink{
-  display:inline-block;margin-left:5px;color:var(--fg2);font-size:11px;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-left:6px;color:var(--accent);font-size:12px;font-weight:600;
   text-decoration:none;position:relative;line-height:1;
+  width:22px;height:22px;border-radius:7px;
+  border:1px solid var(--line);background:var(--bg2);
+  vertical-align:middle;-webkit-tap-highlight-color:transparent;
 }
-thead th.shop .slink::after{content:"";position:absolute;left:-8px;right:-8px;top:-12px;bottom:-12px}
+thead th.shop .slink::after{content:"";position:absolute;left:-11px;right:-11px;top:-13px;bottom:-13px}
 thead th.shop .slink:hover{color:var(--accent)}
 thead th.shop .slink:active{transform:scale(1.2)}
 thead th .ut{display:block;font-size:9.5px;font-weight:400;color:var(--fg2);margin-top:1px}
@@ -423,6 +427,19 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 </div></footer>
 
 <script>
+// iOSのダブルタップ拡大を抑止(viewport指定だけでは効かないため)
+(() => {
+  let lastTouch = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if(now - lastTouch < 320) e.preventDefault();
+    lastTouch = now;
+  }, {passive:false});
+  // ピンチ拡大も無効化
+  ["gesturestart","gesturechange","gestureend"].forEach(ev =>
+    document.addEventListener(ev, (e) => e.preventDefault(), {passive:false}));
+})();
+
 // 再読み込み時は常にページ先頭から表示する
 // (ブラウザのスクロール位置復元と、URLに残った#アンカーへのジャンプを両方無効化)
 // スクロール位置の復元は自前で正確に行う:
