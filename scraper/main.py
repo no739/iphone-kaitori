@@ -122,15 +122,15 @@ def fmt_yen(v):
     return f"{v:,}円"
 
 
+def _fmt_ts(iso):
+    try:
+        return datetime.fromisoformat(iso).strftime("%m/%d %H:%M")
+    except (TypeError, ValueError):
+        return None
+
+
 def build_change_message(nz, shops_by_id, changes, now, prev_updated=None):
-    when = f"{now.strftime('%m/%d %H:%M')}時点"
-    if prev_updated:
-        try:
-            pt = datetime.fromisoformat(prev_updated).strftime("%m/%d %H:%M")
-            when = f"{pt}時点 → {when}"
-        except ValueError:
-            pass
-    lines = [f"**📱 買取価格 変更検知** ({when})"]
+    lines = [f"**📱 買取価格 変更検知** ({now.strftime('%m/%d %H:%M')} の巡回)"]
     ups = sum(1 for c in changes if c["new"] > c["old"])
     downs = len(changes) - ups
     lines.append(f"変更 {len(changes)}件 (値上げ▲{ups} / 値下げ▼{downs})")
@@ -141,13 +141,11 @@ def build_change_message(nz, shops_by_id, changes, now, prev_updated=None):
         line = (f"{arrow} {key_label(nz, c['key'])} | "
                 f"{shops_by_id[c['shop']]['name']} "
                 f"{fmt_yen(c['old'])} → **{fmt_yen(c['new'])}** ({diff:+,})")
-        # この業者だけ比較元が古い場合(取得失敗が続いていた等)は注記
-        if c.get("prev_ts") and prev_updated and c["prev_ts"] != prev_updated:
-            try:
-                pt = datetime.fromisoformat(c["prev_ts"]).strftime("%m/%d %H:%M")
-                line += f" ※{pt}時点比"
-            except ValueError:
-                pass
+        # サイトと同じく「旧価格を確認した時点 → 変更を検知した時点」を明示
+        pt = _fmt_ts(c.get("prev_ts") or prev_updated)
+        nt = _fmt_ts(c.get("ts")) or now.strftime("%m/%d %H:%M")
+        if pt:
+            line += f"\n　　 ({pt}時点 → {nt}時点)"
         lines.append(line)
     if len(changes) > 80:
         lines.append(f"…ほか {len(changes) - 80} 件(サイト参照)")
