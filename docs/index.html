@@ -261,10 +261,13 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 
 /* 画面上部に追従する業者名ヘッダ(表が長くてもどの業者か分かる) */
 #floathead{
-  position:fixed;z-index:45;display:none;overflow:hidden;pointer-events:none;
+  position:fixed;z-index:62;display:none;overflow:hidden;pointer-events:none;
   background:var(--card);border-bottom:1px solid var(--line);
-  box-shadow:0 3px 10px rgba(0,0,0,.16);border-radius:0;
+  box-shadow:0 3px 10px rgba(0,0,0,.3);border-radius:0;
+  isolation:isolate;   /* 下の表が透けて見えないよう独立した重なり層にする */
 }
+#floathead table{background:var(--card)}
+#floathead th{background:var(--card) !important}
 #floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
 #floathead th{box-shadow:none}
 #floathead th.sticky{
