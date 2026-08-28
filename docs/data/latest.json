@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-28T11:31:17+09:00",
+ "updated": "2026-08-28T11:35:04+09:00",
  "series": [
   {
    "id": "17promax",
@@ -90,8 +90,8 @@
    "id": "morimori",
    "name": "森森買取",
    "url": "https://www.morimori-kaitori.jp/category/03",
-   "ok": true,
-   "error": null
+   "ok": false,
+   "error": "Page.goto: Timeout 45000ms exceeded.\nCall log:\n  - navigating to \"https://www.morimori-kaitori.jp/category/0301066?page=1\", waiting until \"domcontentloaded\"\n"
   },
   {
    "id": "rudeya",
@@ -126,7 +126,7 @@
    "name": "モバステ",
    "url": "https://pastec.net/iphone/",
    "ok": false,
-   "error": "HTTP 403 for https://pastec.net/iphone?series_child_id=555"
+   "error": "商品を1件も抽出できませんでした(ページ構造変更の可能性)"
   },
   {
    "id": "akimoba",
@@ -160,8 +160,8 @@
    "id": "space",
    "name": "携帯空間",
    "url": "https://www.keitaispace.co.jp/",
-   "ok": true,
-   "error": null
+   "ok": false,
+   "error": "Page.goto: Timeout 45000ms exceeded.\nCall log:\n  - navigating to \"https://www.keitaispace.co.jp/product/?se=24\", waiting until \"domcontentloaded\"\n"
   },
   {
    "id": "guest",
@@ -188,8 +188,8 @@
    "id": "god",
    "name": "ケータイゴッド",
    "url": "https://keitai-god.com/price/index.php",
-   "ok": true,
-   "error": null
+   "ok": false,
+   "error": "Page.goto: Timeout 45000ms exceeded.\nCall log:\n  - navigating to \"https://keitai-god.com/price/index.php?ci=11&mi=451\", waiting until \"domcontentloaded\"\n"
   }
  ],
  "prices": {
@@ -861,7 +861,34 @@
    "17promax-512-blue": 228000,
    "17air-256": 133800
   },
-  "morimori": {},
+  "morimori": {
+   "17promax-256-silver": 196500,
+   "17promax-256-blue": 196500,
+   "17promax-256-orange": 196500,
+   "17promax-512-silver": 227500,
+   "17promax-512-blue": 227500,
+   "17promax-512-orange": 227500,
+   "17promax-1024-silver": 254000,
+   "17promax-1024-blue": 254000,
+   "17promax-1024-orange": 254000,
+   "17promax-2048-silver": 293000,
+   "17promax-2048-orange": 293000,
+   "17promax-2048-blue": 293000,
+   "17pro-256-blue": 184500,
+   "17pro-256-silver": 184500,
+   "17pro-256-orange": 178000,
+   "17pro-512-silver": 212500,
+   "17pro-512-blue": 212500,
+   "17pro-512-orange": 212500,
+   "17pro-1024-orange": 235000,
+   "17pro-1024-silver": 235000,
+   "17pro-1024-blue": 235000,
+   "17air-256": 133500,
+   "17air-512": 148500,
+   "17air-1024": 154000,
+   "17-256": 138000,
+   "17-512": 159000
+  },
   "rudeya": {
    "17promax-256-silver": 196500,
    "17pro-256-silver": 184500,
