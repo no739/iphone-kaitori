@@ -162,12 +162,14 @@ thead th .fav::after{content:"";position:absolute;left:-10px;right:-8px;top:-12p
 thead th .fav:active{transform:scale(1.3)}
 /* 外した業者が移動する前に1秒ハイライトして分かるようにする */
 thead th.favout{animation:favout 1s ease-out}
+thead th.favin{animation:favin 1s ease-out}
+@keyframes favin{0%,60%{background:color-mix(in srgb,var(--accent) 30%,transparent)}100%{background:transparent}}
 @keyframes favout{0%,60%{background:color-mix(in srgb,var(--down) 30%,transparent)}100%{background:transparent}}
 thead th.favflash{animation:favflash .5s ease-out}
 @keyframes favflash{0%{background:color-mix(in srgb,#f5a623 45%,transparent)}100%{background:transparent}}
 thead th .fav.on{color:#f5a623}
 thead th.shop .sname{display:inline-block;padding:2px 0}
-thead th.isfav{background:color-mix(in srgb, var(--accent) 9%, var(--card))}
+
 #favbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 0;padding:0 22px}
 .favhint{font-size:12.5px;color:var(--fg2)}
 #favtoggle{font-size:13px;padding:6px 14px}
@@ -576,12 +578,12 @@ function toggleFav(id, el){
     buildTable(); buildFavBar();
     if(typeof buildChanges === "function") buildChanges();
   };
-  if(removing && el){
-    // どの業者を外したか分かるよう、その場で☆に変えて1秒見せてから並べ替える
-    el.textContent = "☆";
-    el.classList.remove("on");
+  if(el){
+    // どの業者を操作したか分かるよう、その場で星を切り替えて1秒見せてから並べ替える
+    el.textContent = removing ? "☆" : "★";
+    el.classList.toggle("on", !removing);
     const th = el.closest("th");
-    if(th){ th.classList.remove("isfav"); th.classList.add("favout"); }
+    if(th){ th.classList.remove("isfav"); th.classList.add(removing ? "favout" : "favin"); }
     if(navigator.vibrate) navigator.vibrate(10);
     setTimeout(refresh, 1000);
   }else{
