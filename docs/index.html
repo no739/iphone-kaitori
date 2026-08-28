@@ -280,12 +280,32 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 // 再読み込み時は常にページ先頭から表示する
 // (ブラウザのスクロール位置復元と、URLに残った#アンカーへのジャンプを両方無効化)
 // スクロール位置の復元は自前で正確に行う:
-// 一番上で更新→一番上から / 途中で更新→同じ位置に復帰(表の描画完了後に復元するのでズレない)
+// 一番上で更新→一番上から / 途中で更新→同じ位置に復帰。
+// 前回のページ高さを先に確保して「描画前にワープ」するので、先頭が一瞬見えることもない。
 if("scrollRestoration" in history) history.scrollRestoration = "manual";
 if(location.hash) history.replaceState(null, "", location.pathname + location.search);
 addEventListener("pagehide", () => {
-  try{ sessionStorage.setItem("scrollpos", String(Math.round(scrollY))); }catch(e){}
+  try{
+    sessionStorage.setItem("scrollpos", String(Math.round(scrollY)));
+    sessionStorage.setItem("scrollh", String(document.scrollingElement.scrollHeight));
+  }catch(e){}
 });
+function jumpTo(y){  // スムーズスクロール設定を無視して瞬間移動
+  const el = document.documentElement;
+  el.style.scrollBehavior = "auto";
+  window.scrollTo(0, y);
+  el.style.scrollBehavior = "";
+}
+let SAVED_SP = 0;
+try{
+  SAVED_SP = parseInt(sessionStorage.getItem("scrollpos") || "0", 10) || 0;
+  const savedH = parseInt(sessionStorage.getItem("scrollh") || "0", 10) || 0;
+  if(SAVED_SP > 0 && savedH > 0){
+    // データ描画前でも前回位置までスクロールできるよう、先に高さを確保してワープ
+    document.documentElement.style.minHeight = savedH + "px";
+    jumpTo(SAVED_SP);
+  }
+}catch(e){}
 
 // Discord Webhook 登録所(Google Apps Script)のURL。空の間はフォーム無効。
 const REGISTRY_URL = "https://script.google.com/macros/s/AKfycbzo5dZe3UkaKpH3EvLrCbAI__2cYyF_7xfv1YuV53oUnm0MGELG_nKrFMsXBAIU7NTHPQ/exec";
@@ -320,12 +340,11 @@ async function boot(){
   buildPicker(); buildTable(); buildChanges(); buildFooter();
   document.getElementById("loading").style.display = "none";
   document.getElementById("tablewrap").style.display = "";
-  // 表の描画が終わってページの高さが確定してから、保存しておいた位置へ復帰
+  // 表の描画が終わって本当の高さが確定したら、位置を合わせ直してダミーの高さを解除
   if(performance.now() < 3000){
-    let sp = 0;
-    try{ sp = parseInt(sessionStorage.getItem("scrollpos") || "0", 10) || 0; }catch(e){}
-    window.scrollTo(0, sp);
+    jumpTo(SAVED_SP);
   }
+  document.documentElement.style.minHeight = "";
 }
 
 function buildPicker(){
