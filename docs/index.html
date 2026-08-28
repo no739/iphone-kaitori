@@ -113,13 +113,13 @@ header.hero .cta{margin-top:20px;display:flex;gap:16px;justify-content:center;fl
 /* ---- table ---- */
 main{max-width:1400px;margin:0 auto;padding:10px 22px 40px}
 .tablewrap{
-  overflow-x:auto;      /* 横だけ表の中でスクロール(縦はページと一体化=詰まらない) */
+  overflow:auto;max-height:78vh;   /* 表の中で縦横スクロール。ヘッダと左列はブラウザ標準のstickyで固定 */
   border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card);
   /* 表の端まで行ったらページ全体のスクロールに自然に繋がる(閉じ込めない) */
 }
 table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;letter-spacing:-.01em}
 thead th{
-  position:static;background:var(--card);z-index:3;
+  position:sticky;top:0;background:var(--card);z-index:3;
   font-weight:600;color:var(--fg2);font-size:11.5px;
   padding:12px 10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;
 }
@@ -213,6 +213,7 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 
 /* ---- モバイル調整 ---- */
 @media (max-width: 640px){
+  #topmask{height:0 !important}
   #menubtn{top:10px;left:10px;width:42px;height:42px}
   #menupanel{padding-top:74px}
   /* ヒーローはApple風に余白多め・文字は控えめに */
@@ -225,7 +226,7 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   header.hero .btn{font-size:14px;padding:9px 18px}
   /* スマホは表の縦スクロールをページと一体化(iOSで上下に引っかかる問題の根治)。
      機種ごと表示になったので表が短く、ヘッダ固定なしでも実用上困らない */
-  .tablewrap{max-height:none}
+  .tablewrap{max-height:72vh}
   /* 機種ボタンは横スクロールさせず折り返して全部見せる */
   .picker{flex-wrap:wrap;overflow:visible;gap:7px}
   .picker button{padding:7px 14px;font-size:13px}
@@ -264,7 +265,7 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 
 /* 画面上部に追従する業者名ヘッダ(表が長くてもどの業者か分かる) */
 #floathead{
-  position:fixed;z-index:62;display:none;overflow:visible;pointer-events:none;
+  position:fixed;z-index:62;display:none;overflow:hidden;pointer-events:none;
   background:var(--card);border-bottom:1px solid var(--line);
   box-shadow:0 3px 10px rgba(0,0,0,.3);border-radius:0;
   isolation:isolate;   /* 下の表が透けて見えないよう独立した重なり層にする */
@@ -272,18 +273,18 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 /* 画面最上部(時計・電波のあたり)を常に塞ぐ帯。表がその下を通り抜けても覗かない */
 #topmask{
   position:fixed;top:0;left:0;right:0;z-index:61;pointer-events:none;
-  height:calc(env(safe-area-inset-top, 0px) + 8px);
-  background:var(--bg);
+  height:0;background:var(--bg);
 }
+
 #floathead table{background:var(--card)}
 #floathead th{background:var(--card) !important}
 #floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
 #floathead th{box-shadow:none}
 #floathead th.sticky{
-  position:relative !important;z-index:5;background:var(--card);
+  position:relative !important;z-index:20 !important;background:var(--card) !important;
   box-shadow:6px 0 8px -4px rgba(0,0,0,.45);   /* 下に潜る列との境界を明示 */
 }
-#floathead th:not(.sticky){position:relative !important;z-index:1}
+#floathead th:not(.sticky){position:relative !important;z-index:1 !important}
 
 /* 横スクロールを示すリッチな初回演出: 光のスイープ+ラバーバンドのチラ見せ */
 #tablezone{position:relative}
@@ -841,19 +842,39 @@ let fhRebuild = null;
   };
 
   const sync = () => {
+    // 表本体のヘッダをブラウザ標準の固定で表示するため、追従ヘッダは常に非表示
+    holder.style.display = "none";
+    bar.classList.remove("on");
+    if(true) return;
     const r = wrap.getBoundingClientRect();
     const headH = table.tHead ? table.tHead.getBoundingClientRect().height : 0;
     const show = r.top < 0 && r.bottom > headH + 80;
-    bar.classList.remove("on");   // ピル方式は不採用
     holder.style.display = show ? "block" : "none";
     if(show){
-      holder.style.top = "calc(env(safe-area-inset-top, 0px) + 8px)";
+      const maskH = document.getElementById("topmask").getBoundingClientRect().height;
+      holder.style.top = maskH + "px";
       holder.style.left = r.left + "px";
       holder.style.width = r.width + "px";
       inner.style.transform = `translateX(${-wrap.scrollLeft}px)`;
-      // 固定列(カラー)は横スクロール分を打ち消して常に左端に留める
-      const st = inner.querySelector("th.sticky");
-      if(st) st.style.transform = `translateX(${wrap.scrollLeft}px)`;
+      // 固定列(カラー)は流れる列とは別レイヤーに複製して、常に左端に不透明で重ねる
+      const src = table.querySelector("thead th.sticky");
+      if(src){
+        if(!holder.__fix){
+          const fix = document.createElement("div");
+          fix.className = "fixcol";
+          holder.appendChild(fix);
+          holder.__fix = fix;
+        }
+        const fix = holder.__fix;
+        const w = src.getBoundingClientRect().width;
+        fix.style.cssText =
+          `position:absolute;left:0;top:0;bottom:0;width:${w}px;` +
+          `background:var(--card);z-index:30;` +
+          `box-shadow:6px 0 8px -4px rgba(0,0,0,.45);` +
+          `display:flex;align-items:center;padding:0 10px;` +
+          `font-size:11.5px;font-weight:600;color:var(--fg2);`;
+        fix.textContent = src.textContent.trim();
+      }
     }
   };
   wrap.addEventListener("scroll", sync, {passive:true});
