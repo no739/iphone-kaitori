@@ -113,7 +113,9 @@ header.hero .cta{margin-top:20px;display:flex;gap:16px;justify-content:center;fl
 /* ---- table ---- */
 main{max-width:1400px;margin:0 auto;padding:10px 22px 40px}
 .tablewrap{
-  overflow:auto;max-height:82vh;  /* 縦横スクロールを表の中に閉じ込め、ヘッダ行を固定(スプレッドシートの固定と同じ挙動) */
+  overflow-x:auto;      /* 横だけ表の中でスクロール */
+  overflow-y:clip;      /* 縦はページと一体化: 表の端でスクロールが詰まるのを防ぐ */
+  overscroll-behavior-x:contain;
   border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card);
   /* 表の端まで行ったらページ全体のスクロールに自然に繋がる(閉じ込めない) */
 }
