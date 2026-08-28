@@ -111,6 +111,7 @@ td.max{background:var(--hl);box-shadow:inset 0 0 0 1.5px var(--hl-border);border
 td.max .d{font-weight:600}
 td .d{display:block;font-size:10.5px;font-weight:500;line-height:1.2}
 .d.up{color:var(--up)} .d.down{color:var(--down)} .d.dim0{color:var(--fg2)}
+.d .dt{color:var(--fg2);font-weight:400;font-size:9.5px}
 td.dim{color:var(--fg2)}
 td.na{color:var(--line)}
 th.stale{color:var(--down)}
@@ -250,9 +251,24 @@ const REGISTRY_URL = "https://script.google.com/macros/s/AKfycbzo5dZe3UkaKpH3EvL
 const fmt = n => n == null ? "—" : n.toLocaleString("ja-JP");
 let DB = null, filter = "all";
 
+let LAST_CHANGE = {};  // "shop|key" -> {d, ts} 直近24時間の最後の変動
 async function boot(){
-  const res = await fetch("data/latest.json?" + Date.now());
+  const [res, resCh] = await Promise.all([
+    fetch("data/latest.json?" + Date.now()),
+    fetch("data/changes.json?" + Date.now()).catch(()=>null),
+  ]);
   DB = await res.json();
+  try{
+    DB.changeList = resCh ? await resCh.json() : [];
+  }catch(e){ DB.changeList = []; }
+  // 新しい順に並んでいるので、(業者,キー)ごとの最初の1件が最新の変動
+  const dayAgo = Date.now() - 24*60*60*1000;
+  for(const c of DB.changeList){
+    const k = c.shop + "|" + c.key;
+    if(!(k in LAST_CHANGE) && new Date(c.ts).getTime() > dayAgo){
+      LAST_CHANGE[k] = { d: c.new - c.old, ts: c.ts };
+    }
+  }
   const up = new Date(DB.updated);
   document.getElementById("updated").textContent =
     "更新日時: " + up.toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) +
@@ -300,9 +316,12 @@ function keyRows(){
 
 function cell(shopId, key){
   const p = (DB.prices[shopId]||{})[key];
+  if(p == null) return {p:null, d:null, dts:null};
+  // 直近24時間内の「最後の変動」を差分表示(巡回をまたいでも残る)
+  const lc = LAST_CHANGE[shopId + "|" + key];
+  if(lc) return {p, d: lc.d, dts: lc.ts};
   const prev = (DB.prev[shopId]||{})[key];
-  if(p == null) return {p:null, d:null};
-  return {p, d:(prev!=null && prev!==p) ? p-prev : null};
+  return {p, d:(prev!=null && prev!==p) ? p-prev : null, dts:null};
 }
 
 function yesterdayMax(key){
@@ -352,8 +371,10 @@ function buildTable(){
         if(c.p == null){ html += '<td class="na">0</td>'; continue; }
         const isMax = c.p === max;
         let d = "";
-        if(c.d != null)
-          d = `<span class="d ${c.d>0?'up':'down'}">${c.d>0?"▲":"▼"}${fmt(Math.abs(c.d))}</span>`;
+        if(c.d != null){
+          const t = c.dts ? new Date(c.dts).toLocaleString("ja-JP",{hour:"2-digit",minute:"2-digit"}) : "";
+          d = `<span class="d ${c.d>0?'up':'down'}">${c.d>0?"▲":"▼"}${fmt(Math.abs(c.d))}${t?`<span class="dt"> ${t}</span>`:""}</span>`;
+        }
         html += `<td${isMax?' class="max"':''}>${fmt(c.p)}${d}</td>`;
       }
       html += "</tr>";
@@ -374,8 +395,7 @@ function labelOf(key){
 
 async function buildChanges(){
   try{
-    const res = await fetch("data/changes.json?" + Date.now());
-    const list = await res.json();
+    const list = DB.changeList || [];
     const ul = document.getElementById("changelist");
     if(!list.length){ ul.innerHTML = "<li>まだ変更履歴はありません。</li>"; return; }
     const shopName = id => (DB.shops.find(s=>s.id===id)||{}).name || id;
