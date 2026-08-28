@@ -235,26 +235,27 @@ thead th.wave{animation:thwave .55s cubic-bezier(.34,1.56,.64,1) both}
   position:fixed;left:0;bottom:14px;z-index:60;pointer-events:none;
   width:64px;will-change:transform;visibility:hidden;
 }
-#crab.walk{visibility:visible;animation:crabwalk var(--ct, 14s) linear forwards}
+#crab .crabunit{position:absolute;bottom:0;left:0;width:100%}
+#crab.walk{visibility:visible;animation:crabwalk var(--ct, 8s) linear forwards}
 @keyframes crabwalk{
   0%{opacity:0;transform:translate3d(-90px,0,0)}
   3%{opacity:1}
   96%{opacity:1}
   100%{opacity:0;transform:translate3d(calc(100vw + 90px),0,0)}
 }
-/* 体の上下の揺れ(カサカサ感) */
-#crab .body{animation:crabbob .32s ease-in-out infinite}
-@keyframes crabbob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-2.5px) rotate(1.5deg)}}
+/* 体の上下の揺れ(カサカサ感)。速く歩くので周期も短め */
+#crab .body{animation:crabbob var(--sp, .22s) ease-in-out infinite}
+@keyframes crabbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
 /* ハサミの開閉 */
-#crab .claw-l{transform-origin:78px 118px;animation:clawl 1.15s ease-in-out infinite}
-#crab .claw-r{transform-origin:242px 118px;animation:clawr 1.15s ease-in-out infinite}
-@keyframes clawl{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-13deg)}}
-@keyframes clawr{0%,100%{transform:rotate(0deg)}50%{transform:rotate(13deg)}}
+#crab .claw-l{transform-origin:78px 118px;animation:clawl .8s ease-in-out infinite}
+#crab .claw-r{transform-origin:242px 118px;animation:clawr .8s ease-in-out infinite}
+@keyframes clawl{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-14deg)}}
+@keyframes clawr{0%,100%{transform:rotate(0deg)}50%{transform:rotate(14deg)}}
 /* 脚の交互運び */
-#crab .legs-a{animation:legA .32s ease-in-out infinite}
-#crab .legs-b{animation:legB .32s ease-in-out infinite}
-@keyframes legA{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-@keyframes legB{0%,100%{transform:translateY(-3px)}50%{transform:translateY(0)}}
+#crab .legs-a{animation:legA var(--sp, .22s) ease-in-out infinite}
+#crab .legs-b{animation:legB var(--sp, .22s) ease-in-out infinite}
+@keyframes legA{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes legB{0%,100%{transform:translateY(-4px)}50%{transform:translateY(0)}}
 @media (prefers-reduced-motion: reduce){ #crab{display:none} }
 
 footer{background:var(--bg2);margin-top:40px}
@@ -266,42 +267,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 </head>
 <body>
 
-<div id="crab" aria-hidden="true">
-  <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
-    <g class="body" style="transform-origin:160px 170px">
-      <g fill="#e01b1b" stroke="#111" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
-        <!-- 脚(太い帯状・左右4本ずつ) -->
-        <g class="legs-a" fill="#e01b1b">
-          <!-- 外側へ大きく張り出す脚(左右2本ずつ) -->
-          <path d="M104 168 C60 154 24 158 2 184 C26 196 40 214 44 238 C58 220 78 206 106 200Z"/>
-          <path d="M108 202 C64 212 30 240 14 278 C42 270 66 276 84 292 C88 258 100 228 118 212Z"/>
-          <path d="M216 168 C260 154 296 158 318 184 C294 196 280 214 276 238 C262 220 242 206 214 200Z"/>
-          <path d="M212 202 C256 212 290 240 306 278 C278 270 254 276 236 292 C232 258 220 228 202 212Z"/>
-        </g>
-        <g class="legs-b" fill="#e01b1b">
-          <path d="M118 224 C94 250 80 278 82 302 C102 292 120 290 138 296 C130 268 128 242 136 224Z"/>
-          <path d="M202 224 C226 250 240 278 238 302 C218 292 200 290 182 296 C190 268 192 242 184 224Z"/>
-          <path d="M156 236 C148 262 148 282 156 302 C166 298 176 298 186 302 C192 280 190 258 182 236Z"/>
-        </g>
-        <!-- ハサミ(大きく・上に構える) -->
-        <g class="claw-l">
-          <path d="M96 150 C56 128 32 92 40 56 C46 28 74 18 94 32 C112 44 112 68 100 84 C118 74 138 84 138 104 C138 128 116 144 96 150Z"/>
-          <path d="M60 62 C74 82 90 98 108 108" fill="none" stroke-width="10"/>
-        </g>
-        <g class="claw-r">
-          <path d="M224 150 C264 128 288 92 280 56 C274 28 246 18 226 32 C208 44 208 68 220 84 C202 74 182 84 182 104 C182 128 204 144 224 150Z"/>
-          <path d="M260 62 C246 82 230 98 212 108" fill="none" stroke-width="10"/>
-        </g>
-        <!-- 甲羅 -->
-        <ellipse cx="160" cy="182" rx="92" ry="66"/>
-        <!-- 目の柄 -->
-        <path d="M134 128 L134 112" stroke-width="10"/><path d="M186 128 L186 112" stroke-width="10"/>
-      </g>
-      <circle cx="132" cy="100" r="13" fill="#3a1414" stroke="#111" stroke-width="7"/>
-      <circle cx="188" cy="100" r="13" fill="#3a1414" stroke="#111" stroke-width="7"/>
-    </g>
-  </svg>
-</div>
+<div id="crab" aria-hidden="true"></div>
 <button id="menubtn" aria-label="メニュー"><span></span><span></span><span></span></button>
 <div id="menuscrim"></div>
 <div id="menupanel">
@@ -657,10 +623,54 @@ document.getElementById("wh-join").onclick = joinSend;
 // ---- 遊び心: たまにカニが画面下をカサカサ横断する ----
 (() => {
   const crab = document.getElementById("crab");
+  const CRAB_SVG = `<svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
+    <g class="body" style="transform-origin:160px 170px">
+      <g fill="#e01b1b" stroke="#111" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+        <!-- 脚(太い帯状・左右4本ずつ) -->
+        <g class="legs-a" fill="#e01b1b">
+          <!-- 外側へ大きく張り出す脚(左右2本ずつ) -->
+          <path d="M104 168 C60 154 24 158 2 184 C26 196 40 214 44 238 C58 220 78 206 106 200Z"/>
+          <path d="M108 202 C64 212 30 240 14 278 C42 270 66 276 84 292 C88 258 100 228 118 212Z"/>
+          <path d="M216 168 C260 154 296 158 318 184 C294 196 280 214 276 238 C262 220 242 206 214 200Z"/>
+          <path d="M212 202 C256 212 290 240 306 278 C278 270 254 276 236 292 C232 258 220 228 202 212Z"/>
+        </g>
+        <g class="legs-b" fill="#e01b1b">
+          <path d="M118 224 C94 250 80 278 82 302 C102 292 120 290 138 296 C130 268 128 242 136 224Z"/>
+          <path d="M202 224 C226 250 240 278 238 302 C218 292 200 290 182 296 C190 268 192 242 184 224Z"/>
+          <path d="M156 236 C148 262 148 282 156 302 C166 298 176 298 186 302 C192 280 190 258 182 236Z"/>
+        </g>
+        <!-- ハサミ(大きく・上に構える) -->
+        <g class="claw-l">
+          <path d="M96 150 C56 128 32 92 40 56 C46 28 74 18 94 32 C112 44 112 68 100 84 C118 74 138 84 138 104 C138 128 116 144 96 150Z"/>
+          <path d="M60 62 C74 82 90 98 108 108" fill="none" stroke-width="10"/>
+        </g>
+        <g class="claw-r">
+          <path d="M224 150 C264 128 288 92 280 56 C274 28 246 18 226 32 C208 44 208 68 220 84 C202 74 182 84 182 104 C182 128 204 144 224 150Z"/>
+          <path d="M260 62 C246 82 230 98 212 108" fill="none" stroke-width="10"/>
+        </g>
+        <!-- 甲羅 -->
+        <ellipse cx="160" cy="182" rx="92" ry="66"/>
+        <!-- 目の柄 -->
+        <path d="M134 128 L134 112" stroke-width="10"/><path d="M186 128 L186 112" stroke-width="10"/>
+      </g>
+      <circle cx="132" cy="100" r="13" fill="#3a1414" stroke="#111" stroke-width="7"/>
+      <circle cx="188" cy="100" r="13" fill="#3a1414" stroke="#111" stroke-width="7"/>
+    </g>
+  </svg>`;
+  // 3匹の隊列(前後にずらし、大きさと歩行テンポを少し変える)
+  const troop = [
+    {x:0,   y:0,  s:1.00, sp:.20},
+    {x:-46, y:3,  s:.80, sp:.24},
+    {x:-84, y:-2, s:.66, sp:.18},
+  ];
+  crab.innerHTML = troop.map(c =>
+    `<div class="crabunit" style="transform:translate(${c.x}px,${c.y}px) scale(${c.s});--sp:${c.sp}s">${CRAB_SVG}</div>`
+  ).join("");
+
   function walk(){
     crab.classList.remove("walk");
     void crab.offsetWidth;                       // アニメをリセット
-    const dur = 12 + Math.random() * 8;          // 12〜20秒かけてゆっくり横断
+    const dur = 6 + Math.random() * 3;           // 6〜9秒でカサカサッと素早く横断
     crab.style.setProperty("--ct", dur + "s");
     crab.style.bottom = (10 + Math.random() * 26) + "px";
     crab.style.width = (52 + Math.random() * 22) + "px";
