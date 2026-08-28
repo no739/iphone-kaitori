@@ -320,6 +320,10 @@ async function boot(){
     fetch("data/changes.json?" + Date.now()).catch(()=>null),
   ]);
   DB = await res.json();
+  // スマホは全機種表示だと長すぎるので、初期表示を先頭の機種(Pro Max)に絞る
+  if(matchMedia("(max-width: 640px)").matches && filter === "all" && DB.series.length){
+    filter = DB.series[0].id;
+  }
   try{
     DB.changeList = resCh ? await resCh.json() : [];
   }catch(e){ DB.changeList = []; }
@@ -359,7 +363,9 @@ function buildPicker(){
     b.onclick = () => { filter = id; buildPicker(); buildTable(); };
     return b;
   };
-  p.replaceChildren(mk("all","すべて"), ...DB.series.map(s => mk(s.id, s.name)));
+  // スマホでは「すべて」を出さない(機種ごとに見る前提)
+  const heads = compact ? [] : [mk("all","すべて")];
+  p.replaceChildren(...heads, ...DB.series.map(s => mk(s.id, s.name)));
 }
 
 function keyRows(){
