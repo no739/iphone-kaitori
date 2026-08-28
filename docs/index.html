@@ -500,25 +500,27 @@ function yesterdayMax(key){
 
 // ---- お気に入り業者(★) ----
 // FAV_MODE: A=★を左に固定 / B=★だけ表示の切替 / AB=両方 / off=無効
-const FAV_MODE = (new URLSearchParams(location.search).get("fav") || "off").toUpperCase();
-let favs = new Set();
+const FAV_MODE = (new URLSearchParams(location.search).get("fav") || "A").toUpperCase();
+let favs = [];   // ★を付けた順に並ぶ
 let favOnly = false;
-try{ favs = new Set(JSON.parse(localStorage.getItem("favshops") || "[]")); }catch(e){}
+try{ favs = JSON.parse(localStorage.getItem("favshops") || "[]"); if(!Array.isArray(favs)) favs = []; }catch(e){}
+const isFav = id => favs.includes(id);
 function saveFavs(){
-  try{ localStorage.setItem("favshops", JSON.stringify([...favs])); }catch(e){}
+  try{ localStorage.setItem("favshops", JSON.stringify(favs)); }catch(e){}
 }
 function toggleFav(id){
-  favs.has(id) ? favs.delete(id) : favs.add(id);
+  isFav(id) ? favs = favs.filter(x => x !== id) : favs.push(id);
   saveFavs(); buildTable(); buildFavBar();
 }
 function orderedShops(){
   let list = DB.shops;
   if(FAV_MODE === "B" || FAV_MODE === "AB"){
-    if(favOnly && favs.size) list = list.filter(s => favs.has(s.id));
+    if(favOnly && favs.length) list = list.filter(s => isFav(s.id));
   }
   if(FAV_MODE === "A" || FAV_MODE === "AB"){
-    // ★を左端(最高値のすぐ右)へ。それ以外は元の順序を維持
-    list = [...list].sort((a,b) => (favs.has(b.id)?1:0) - (favs.has(a.id)?1:0));
+    // ★を付けた順に左端(最高値のすぐ右)へ。それ以外は元の順序を維持
+    const rank = id => { const i = favs.indexOf(id); return i < 0 ? 9999 : i; };
+    list = [...list].sort((a,b) => rank(a.id) - rank(b.id));
   }
   return list;
 }
@@ -534,7 +536,7 @@ function buildFavBar(){
     : "★をタップすると左端に固定。下のボタンでお気に入りだけ表示に切り替えできます";
   let html = `<span class="favhint">${hint}</span>`;
   if(FAV_MODE === "B" || FAV_MODE === "AB"){
-    html += `<button id="favtoggle" class="btn ghost">${favOnly ? "全21社を表示" : `お気に入りだけ表示${favs.size?`(${favs.size})`:""}`}</button>`;
+    html += `<button id="favtoggle" class="btn ghost">${favOnly ? "全21社を表示" : `お気に入りだけ表示${favs.length?`(${favs.length})`:""}`}</button>`;
   }
   bar.innerHTML = html;
   const tg = document.getElementById("favtoggle");
@@ -549,7 +551,7 @@ function buildTable(){
   for(const s of shops){
     const stale = !s.ok;
     const star = FAV_MODE === "OFF" ? "" :
-      `<span class="fav${favs.has(s.id)?" on":""}" data-fav="${s.id}">${favs.has(s.id)?"★":"☆"}</span>`;
+      `<span class="fav${isFav(s.id)?" on":""}" data-fav="${s.id}">${isFav(s.id)?"★":"☆"}</span>`;
     // その業者の価格を最後に実際に取得した時刻をヘッダ下に表示
     let ut = "";
     const iso = (DB.shop_updated||{})[s.id];
@@ -561,7 +563,7 @@ function buildTable(){
         : d.toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
       ut = `<span class="ut${stale?' utstale':''}">${t}</span>`;
     }
-    html += `<th class="shop${stale?' stale':''}${favs.has(s.id)?' isfav':''}"${stale?' title="取得エラー: 前回値を表示中"':''}>${star}<a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a>${ut}</th>`;
+    html += `<th class="shop${stale?' stale':''}${isFav(s.id)?' isfav':''}"${stale?' title="取得エラー: 前回値を表示中"':''}>${star}<a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a>${ut}</th>`;
   }
   html += "</tr></thead><tbody>";
 
