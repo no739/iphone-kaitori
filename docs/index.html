@@ -446,6 +446,22 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
     document.addEventListener(ev, (e) => e.preventDefault(), {passive:false}));
 })();
 
+// 表の端まで来たらページスクロールへ即座に引き継ぐ
+// (ブラウザは1ジェスチャーを表に掴んだままにするため、端で止まって見える)
+(() => {
+  const wrap = document.getElementById("tablewrap");
+  if(!wrap) return;
+  wrap.addEventListener("wheel", (e) => {
+    if(e.ctrlKey || e.deltaY === 0) return;   // ピンチズームは対象外
+    const atBottom = wrap.scrollTop + wrap.clientHeight >= wrap.scrollHeight - 2;
+    const atTop = wrap.scrollTop <= 0;
+    if((e.deltaY > 0 && atBottom) || (e.deltaY < 0 && atTop)){
+      e.preventDefault();
+      window.scrollBy({top: e.deltaY, left: 0, behavior: "auto"});
+    }
+  }, {passive: false});
+})();
+
 // 再読み込み時は常にページ先頭から表示する
 // (ブラウザのスクロール位置復元と、URLに残った#アンカーへのジャンプを両方無効化)
 // スクロール位置の復元は自前で正確に行う:
