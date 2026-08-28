@@ -94,8 +94,15 @@ def fmt_yen(v):
     return f"{v:,}円"
 
 
-def build_change_message(nz, shops_by_id, changes, now):
-    lines = [f"**📱 買取価格 変更検知** ({now.strftime('%m/%d %H:%M')})"]
+def build_change_message(nz, shops_by_id, changes, now, prev_updated=None):
+    when = now.strftime("%m/%d %H:%M")
+    if prev_updated:
+        try:
+            pt = datetime.fromisoformat(prev_updated).strftime("%m/%d %H:%M")
+            when = f"{pt} 時点 → {when}"
+        except ValueError:
+            pass
+    lines = [f"**📱 買取価格 変更検知** ({when})"]
     ups = sum(1 for c in changes if c["new"] > c["old"])
     downs = len(changes) - ups
     lines.append(f"変更 {len(changes)}件 (値上げ▲{ups} / 値下げ▼{downs})")
@@ -188,8 +195,9 @@ def main():
         return
 
     # ---- 通知 ----
+    prev_updated = prev.get("updated")
     if changes:
-        discord.send(build_change_message(nz, shops_by_id, changes, now))
+        discord.send(build_change_message(nz, shops_by_id, changes, now, prev_updated))
     if new_failures:
         names = "、".join(shops_by_id[s]["name"] for s in new_failures)
         errs = "\n".join(f"- {shops_by_id[s]['name']}: {status[s]['error']}"
@@ -212,6 +220,8 @@ def main():
     ts = now.isoformat(timespec="seconds")
     for c in changes:
         c["ts"] = ts
+        if prev_updated:
+            c["prev_ts"] = prev_updated  # 変更前の価格を観測した時刻
     changes_log = (changes + changes_log)[:300]
 
     daily_files = sorted(os.listdir(daily_dir))[-30:] if os.path.isdir(daily_dir) else []
