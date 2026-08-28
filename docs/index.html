@@ -255,10 +255,15 @@ thead th.wave{animation:thwave .55s cubic-bezier(.34,1.56,.64,1) both}
 #crab .body{animation:crabbob var(--sp, .22s) ease-in-out infinite}
 @keyframes crabbob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
 /* ハサミの開閉 */
-#crab .claw-l{transform-origin:78px 118px;animation:clawl .8s ease-in-out infinite}
-#crab .claw-r{transform-origin:242px 118px;animation:clawr .8s ease-in-out infinite}
-@keyframes clawl{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-14deg)}}
-@keyframes clawr{0%,100%{transform:rotate(0deg)}50%{transform:rotate(14deg)}}
+/* ハサミ全体はゆっくり構えを変え、上の爪が「パニパニ」と開閉する */
+#crab .claw-l{transform-origin:100px 140px;animation:clawl 1.6s ease-in-out infinite}
+#crab .claw-r{transform-origin:220px 140px;animation:clawr 1.6s ease-in-out infinite}
+@keyframes clawl{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-7deg)}}
+@keyframes clawr{0%,100%{transform:rotate(0deg)}50%{transform:rotate(7deg)}}
+#crab .claw-l .pinch{transform-origin:96px 100px;animation:pinchl .34s ease-in-out infinite}
+#crab .claw-r .pinch{transform-origin:224px 100px;animation:pinchr .34s ease-in-out infinite}
+@keyframes pinchl{0%,100%{transform:rotate(0deg)}55%{transform:rotate(26deg)}}
+@keyframes pinchr{0%,100%{transform:rotate(0deg)}55%{transform:rotate(-26deg)}}
 /* 脚の交互運び */
 #crab .legs-a{animation:legA var(--sp, .22s) ease-in-out infinite}
 #crab .legs-b{animation:legB var(--sp, .22s) ease-in-out infinite}
@@ -649,12 +654,15 @@ document.getElementById("wh-join").onclick = joinSend;
         </g>
         <!-- ハサミ(大きく・上に構える) -->
         <g class="claw-l">
-          <path d="M96 150 C56 128 32 92 40 56 C46 28 74 18 94 32 C112 44 112 68 100 84 C118 74 138 84 138 104 C138 128 116 144 96 150Z"/>
-          <path d="M60 62 C74 82 90 98 108 108" fill="none" stroke-width="10"/>
+          <!-- 腕 → 下の爪(固定) → 上の爪(パクパク開閉) -->
+          <path d="M126 172 C96 158 74 132 70 104 C92 100 116 116 132 146Z"/>
+          <path class="pinch-fix" d="M78 114 C44 100 22 68 30 34 C58 44 84 68 100 98 C96 108 88 114 78 114Z"/>
+          <path class="pinch" d="M82 96 C54 68 46 30 68 4 C90 24 104 58 102 92 C94 98 88 98 82 96Z"/>
         </g>
         <g class="claw-r">
-          <path d="M224 150 C264 128 288 92 280 56 C274 28 246 18 226 32 C208 44 208 68 220 84 C202 74 182 84 182 104 C182 128 204 144 224 150Z"/>
-          <path d="M260 62 C246 82 230 98 212 108" fill="none" stroke-width="10"/>
+          <path d="M194 172 C224 158 246 132 250 104 C228 100 204 116 188 146Z"/>
+          <path class="pinch-fix" d="M242 114 C276 100 298 68 290 34 C262 44 236 68 220 98 C224 108 232 114 242 114Z"/>
+          <path class="pinch" d="M238 96 C266 68 274 30 252 4 C230 24 216 58 218 92 C226 98 232 98 238 96Z"/>
         </g>
         <!-- 甲羅 -->
         <ellipse cx="160" cy="182" rx="92" ry="66"/>
