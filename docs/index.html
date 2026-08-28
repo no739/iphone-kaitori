@@ -134,7 +134,8 @@ thead th .fav{
   -webkit-tap-highlight-color:transparent;
 }
 /* 見た目は変えずタップ範囲だけ広げる(指で押しやすく、リンク誤タップを防ぐ) */
-thead th .fav:empty{display:none}
+thead th .fav{opacity:.45}
+thead th .fav.on{opacity:1}
 thead th.shop{cursor:pointer;-webkit-touch-callout:none;user-select:none}
 thead th.favflash{animation:favflash .5s ease-out}
 @keyframes favflash{0%{background:color-mix(in srgb,#f5a623 45%,transparent)}100%{background:transparent}}
@@ -521,6 +522,7 @@ function saveFavs(){
 function toggleFav(id){
   isFav(id) ? favs = favs.filter(x => x !== id) : favs.push(id);
   saveFavs(); buildTable(); buildFavBar();
+  if(typeof buildChanges === "function") buildChanges();  // 変更一覧の件数も更新
 }
 function orderedShops(){
   let list = DB.shops;
@@ -561,7 +563,7 @@ function buildTable(){
   for(const s of shops){
     const stale = !s.ok;
     const star = FAV_MODE === "OFF" ? "" :
-      `<span class="fav${isFav(s.id)?" on":""}">${isFav(s.id)?"★":""}</span>`;
+      `<span class="fav${isFav(s.id)?" on":""}">${isFav(s.id)?"★":"☆"}</span>`;
     // その業者の価格を最後に実際に取得した時刻をヘッダ下に表示
     let ut = "";
     const iso = (DB.shop_updated||{})[s.id];
@@ -648,7 +650,7 @@ function labelOf(key){
   return `${s.name} ${capLabel}${color?" "+(s.colors[color]||color):""}`;
 }
 
-let changeShop = "all", changeLimit = 10;
+let changeShop = null, changeLimit = 10;   // null=未選択(★があればお気に入り優先)
 async function buildChanges(){
   try{
     const all = DB.changeList || [];
@@ -669,6 +671,8 @@ async function buildChanges(){
       return b;
     };
     const favCount = all.filter(c => isFav(c.shop)).length;
+    // 未選択なら、★を付けていればお気に入りのみを初期表示に
+    if(changeShop === null) changeShop = (favs.length && favCount) ? "fav" : "all";
     picker.replaceChildren(
       mkS("all", "すべて", all.length),
       mkS("fav", "お気に入りのみ", favCount));
