@@ -277,6 +277,8 @@ if("scrollRestoration" in history) history.scrollRestoration = "manual";
 if(location.hash) history.replaceState(null, "", location.pathname + location.search);
 window.scrollTo(0, 0);
 addEventListener("load", () => window.scrollTo(0, 0));
+// Safari対策: ページを離れる瞬間に先頭へ戻しておく(Safariが記憶する位置を常に0にする)
+addEventListener("pagehide", () => window.scrollTo(0, 0));
 
 // Discord Webhook 登録所(Google Apps Script)のURL。空の間はフォーム無効。
 const REGISTRY_URL = "https://script.google.com/macros/s/AKfycbzo5dZe3UkaKpH3EvLrCbAI__2cYyF_7xfv1YuV53oUnm0MGELG_nKrFMsXBAIU7NTHPQ/exec";
@@ -311,6 +313,8 @@ async function boot(){
   buildPicker(); buildTable(); buildChanges(); buildFooter();
   document.getElementById("loading").style.display = "none";
   document.getElementById("tablewrap").style.display = "";
+  // 表の描画で高さが変わった後、開いた直後(3秒以内)なら先頭に寄せ直す(Safariの復元ズレ対策)
+  if(performance.now() < 3000) window.scrollTo(0, 0);
 }
 
 function buildPicker(){
