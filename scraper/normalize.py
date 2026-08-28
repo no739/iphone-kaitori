@@ -73,6 +73,9 @@ class Normalizer:
                 break
         if sid is None:
             return None
+        # 「iPhone Air 2」のような次世代機を現行Airと誤認しない
+        if "air" in sid and re.search(r"air\s*2(?!\d{2})", s_sp):
+            return None
         m = re.search(r"(\d+(?:\.\d+)?)\s*(tb|gb|g\b|t\b)", s_sp)
         if not m:
             return None
@@ -135,6 +138,22 @@ def yen(text):
         return None
     v = int(m.group(1).replace(",", ""))
     return v if 1000 <= v <= 2_000_000 else None
+
+
+_NEW_MODEL_RE = re.compile(r"iphone\s*(1[89]|2\d)\s*(promax|pro|plus|air|e)?", re.I)
+_NEW_AIR_RE = re.compile(r"iphone\s*air\s*2(?!\d{2})", re.I)
+
+
+def detect_new_model(raw):
+    """models.json 未登録の新世代iPhoneらしき商品名を検出(検知通知用)。"""
+    s = _clean(raw)
+    m = _NEW_MODEL_RE.search(s)
+    if m:
+        return m.group(0)
+    # Air 2系は空白を保った文字列で判定(「air2256gb」の曖昧さを避ける)
+    s_sp = re.sub(r"\s+", " ", unicodedata.normalize("NFKC", raw).lower())
+    m = _NEW_AIR_RE.search(s_sp)
+    return m.group(0).replace(" ", "") if m else None
 
 
 NEW_OK = re.compile(r"未開封|未使用")

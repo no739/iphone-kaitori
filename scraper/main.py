@@ -62,6 +62,7 @@ def scrape_all(shops):
     now_iso = now.isoformat(timespec="seconds")
     prices, status, skipped = {}, {}, set()
     observed = {}  # sid -> その価格を実際に確認した時刻(取得失敗ならNone)
+    unknowns = set()  # 未対応の新機種らしき商品 (token, サンプル名)
     for s in shops:
         sid = s["id"]
         if s.get("partial"):
@@ -88,7 +89,8 @@ def scrape_all(shops):
                 print(f"[NG] {s['name']}: partialデータなし")
             continue
         try:
-            best, _ = collect(sid)
+            best, _, unk = collect(sid)
+            unknowns |= unk
             if not best:
                 raise RuntimeError("商品を1件も抽出できませんでした(ページ構造変更の可能性)")
             prices[sid] = best
@@ -103,7 +105,7 @@ def scrape_all(shops):
             observed[sid] = None
             status[sid] = {"ok": False, "error": str(e)[:300]}
             print(f"[NG] {s['name']}: {e}")
-    return prices, status, skipped, observed
+    return prices, status, skipped, observed, unknowns
 
 
 def detect_changes(prev_prices, prices, status):
@@ -242,7 +244,7 @@ def main():
     prev_prices = prev.get("prices", {})
     prev_status = prev.get("status", {})
 
-    prices, status, skipped, observed = scrape_all(shops)
+    prices, status, skipped, observed, unknowns = scrape_all(shops)
     shops = [s for s in shops if s["id"] not in skipped]
     shops_by_id = {s["id"]: s for s in shops}
 
@@ -289,6 +291,21 @@ def main():
     if changes:
         discord.send(build_change_message(nz, shops_by_id, changes, now,
                                           prev_updated, prices))
+    # 未対応の新機種を検知したら一度だけ通知(検知済みリストで重複防止)
+    if unknowns:
+        seen_path = os.path.join(DATA, "new_models_seen.json")
+        seen = set(load_json(seen_path, []))
+        fresh = sorted({(t, s2) for t, s2 in unknowns if t not in seen})
+        if fresh:
+            lines = ["🔥🔥🔥 **新機種を検知しました!** 🔥🔥🔥", ""]
+            lines.append("📱 業者サイトにこんな商品が出はじめています:")
+            for _t, sample in fresh[:6]:
+                lines.append(f"　✨ {sample}")
+            lines.append("")
+            lines.append("👉 比較表に追加するには、Claudeに「**新機種に対応して**」と伝えてください")
+            discord.send("\n".join(lines))
+            save_json(seen_path, sorted(seen | {t for t, _ in fresh}))
+
     if new_failures:
         names = "、".join(shops_by_id[s]["name"] for s in new_failures)
         errs = "\n".join(f"- {shops_by_id[s]['name']}: {status[s]['error']}"

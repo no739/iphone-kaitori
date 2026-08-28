@@ -24,7 +24,7 @@ def main():
     for sid in TARGETS:
         path = os.path.join(DATA, "partial", f"{sid}.json")
         try:
-            best, _ = collect(sid)
+            best, _, _unk = collect(sid)
             if not best:
                 raise RuntimeError("0件")
             old = load_json(path, {})

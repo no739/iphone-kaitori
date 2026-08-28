@@ -4,15 +4,16 @@
 import sys
 
 from . import shops
-from .normalize import Normalizer, looks_unopened, yen
+from .normalize import Normalizer, detect_new_model, looks_unopened, yen
 
 
 def collect(shop_id):
-    """shop関数を実行し {item_key: price} を返す。"""
+    """shop関数を実行し ({item_key: price}, 採用リスト, 未対応新機種) を返す。"""
     nz = Normalizer()
     fn = shops.REGISTRY[shop_id]
     best = {}
     kept = []
+    unknowns = set()  # (token, サンプル商品名)
     for of in fn():
         price = of["price"] if isinstance(of["price"], int) else yen(of["price"])
         if not price:
@@ -22,6 +23,9 @@ def collect(shop_id):
             continue
         parsed = nz.parse(text)
         if not parsed:
+            tok = detect_new_model(text)
+            if tok:
+                unknowns.add((tok, text[:60]))
             continue
         sid, cap, color = parsed
         ov = of.get("ov") or {}
@@ -40,12 +44,12 @@ def collect(shop_id):
                 if price > best.get(key, 0):
                     best[key] = price
         kept.append((text[:70], price))
-    return best, kept
+    return best, kept, unknowns
 
 
 if __name__ == "__main__":
     sid = sys.argv[1]
-    best, kept = collect(sid)
+    best, kept, _unknowns = collect(sid)
     print(f"== {sid}: {len(kept)} offers -> {len(best)} keys")
     for k in sorted(best):
         print(f"  {k:24s} {best[k]:>9,}")
