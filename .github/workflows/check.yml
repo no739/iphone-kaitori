@@ -33,6 +33,8 @@ jobs:
       - name: 価格取得・通知
         env:
           DISCORD_WEBHOOKS: ${{ secrets.DISCORD_WEBHOOKS }}
+          ENOKING_EMAIL: ${{ secrets.ENOKING_EMAIL }}
+          ENOKING_PASSWORD: ${{ secrets.ENOKING_PASSWORD }}
         run: python -m scraper.main
 
       - name: データをコミット

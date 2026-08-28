@@ -16,6 +16,10 @@ from .fetch import get, get_html
 REGISTRY = {}
 
 
+class SkipShop(Exception):
+    """認証情報未設定などで今回はこの業者をスキップする(エラー扱いにしない)。"""
+
+
 def shop(shop_id):
     def deco(fn):
         REGISTRY[shop_id] = fn
@@ -81,6 +85,83 @@ def kaikyo():
                 continue
             title = text.split("新品")[0].strip()
             offers.extend(expand_color_deductions(title, price))
+    return offers
+
+
+# ---------------------------------------------------------------- 買取エノキング
+def _enoking_creds():
+    import os
+    email = os.environ.get("ENOKING_EMAIL")
+    password = os.environ.get("ENOKING_PASSWORD")
+    if not (email and password):
+        path = os.path.join(os.path.dirname(__file__), "..", "enoking_login.txt")
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                lines = [ln.strip() for ln in f if ln.strip()]
+            if len(lines) >= 2:
+                email, password = lines[0], lines[1]
+    return email, password
+
+
+@shop("enoking")
+def enoking():
+    """会員ログイン必須(Cloudflare保護)。Playwrightでログインして取得。
+    認証情報は ENOKING_EMAIL / ENOKING_PASSWORD か enoking_login.txt(1行目メール, 2行目パスワード)。
+    """
+    email, password = _enoking_creds()
+    if not (email and password):
+        raise SkipShop("エノキングの認証情報が未設定")
+    from .fetch import playwright_ctx
+    cats = {  # カテゴリID(サイトのナビから取得)
+        "17promax": "ef369420-782f-4343-a8fe-12cc875842ab",
+        "17pro": "a97f234d-feb0-4c64-ad65-1c1174f43f12",
+        "17": "1f133399-5164-42a5-83e5-370e3e882f0f",
+        "17air": "0bb59efb-68a5-4b2e-b380-fca0fc593a88",
+    }
+    ctx = playwright_ctx()
+    page = ctx.new_page()
+    offers = []
+    try:
+        # ---- ログイン(既にセッションがあればスキップされる) ----
+        page.goto("https://newenoking-kaitori.com/login",
+                  wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(2500)
+        if page.locator("#email").count():
+            page.fill("#email", email)
+            page.fill("#password", password)
+            page.click("button:has-text('ログイン')")
+            page.wait_for_timeout(4000)
+            if "/login" in page.url and page.locator("#email").count():
+                raise RuntimeError("エノキングにログインできませんでした(メール/パスワードを確認)")
+        # ---- カテゴリごとに価格取得 ----
+        for cat_id in cats.values():
+            page.goto(f"https://newenoking-kaitori.com/products?cat={cat_id}",
+                      wait_until="domcontentloaded", timeout=60000)
+            page.wait_for_timeout(3000)
+            soup = _soup(page.content())
+            for el in soup.find_all(string=re.compile(r"iPhone ?(17|Air)")):
+                name = el.strip()
+                if len(name) < 12 or "GB" not in name and "TB" not in name:
+                    continue
+                # ¥金額をちょうど1つ含む最近傍の祖先をカードとみなす(ホムラ方式)
+                node, price = el.parent, None
+                for _ in range(7):
+                    if node is None:
+                        break
+                    amounts = re.findall(r"[¥￥]\s*([0-9][0-9,]{4,})|([0-9]{2,3},[0-9]{3})\s*円",
+                                         node.get_text(" ", strip=True))
+                    flat = [a or b for a, b in amounts]
+                    if len(flat) == 1:
+                        price = flat[0]
+                        break
+                    if len(flat) > 1:
+                        break
+                    node = node.parent
+                if price:
+                    offers.append({"text": name, "price": price + "円",
+                                   "cond": "新品未開封"})
+    finally:
+        page.close()
     return offers
 
 

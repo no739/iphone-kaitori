@@ -39,8 +39,8 @@ def get(url, session=None, retries=3, wait=5, timeout=40, **kw):
 _PW = {"browser": None, "ctx": None}
 
 
-def _playwright_html(url):
-    """403等でHTTP取得できないサイト向け: ヘッドレスChromiumで取得。"""
+def playwright_ctx():
+    """共有のヘッドレスChromiumコンテキスト(遅延起動)。"""
     from playwright.sync_api import sync_playwright
     if _PW["browser"] is None:
         _PW["pw"] = sync_playwright().start()
@@ -48,13 +48,30 @@ def _playwright_html(url):
         _PW["ctx"] = _PW["browser"].new_context(
             user_agent=UA, locale="ja-JP",
             viewport={"width": 1280, "height": 900})
-    page = _PW["ctx"].new_page()
-    try:
-        page.goto(url, wait_until="domcontentloaded", timeout=45000)
-        page.wait_for_timeout(2500)  # Cloudflare等のJSチャレンジ待ち
-        return page.content()
-    finally:
-        page.close()
+        # 画像・フォント・動画は読まない(高速化とタイムアウト回避)
+        _PW["ctx"].route(
+            "**/*",
+            lambda route: route.abort()
+            if route.request.resource_type in ("image", "font", "media")
+            else route.continue_())
+    return _PW["ctx"]
+
+
+def _playwright_html(url):
+    """403等でHTTP取得できないサイト向け: ヘッドレスChromiumで取得。"""
+    last = None
+    for attempt in range(2):
+        page = playwright_ctx().new_page()
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            page.wait_for_timeout(3000)  # Cloudflare等のJSチャレンジ待ち
+            return page.content()
+        except Exception as e:  # noqa: BLE001
+            last = e
+        finally:
+            page.close()
+        time.sleep(3)
+    raise last
 
 
 def get_html(url, **kw):

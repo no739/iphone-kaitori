@@ -1,4 +1,5 @@
 __pycache__/
 *.pyc
 webhooks.txt
+enoking_login.txt
 .DS_Store

@@ -57,7 +57,8 @@ def key_label(nz, key):
 
 
 def scrape_all(shops):
-    prices, status = {}, {}
+    from .shops import SkipShop
+    prices, status, skipped = {}, {}, set()
     for s in shops:
         sid = s["id"]
         try:
@@ -67,11 +68,14 @@ def scrape_all(shops):
             prices[sid] = best
             status[sid] = {"ok": True, "error": None}
             print(f"[ok] {s['name']}: {len(best)} items")
+        except SkipShop as e:
+            skipped.add(sid)
+            print(f"[skip] {s['name']}: {e}")
         except Exception as e:  # noqa: BLE001
             prices[sid] = {}
             status[sid] = {"ok": False, "error": str(e)[:300]}
             print(f"[NG] {s['name']}: {e}")
-    return prices, status
+    return prices, status, skipped
 
 
 def detect_changes(prev_prices, prices, status):
@@ -160,7 +164,9 @@ def main():
     prev_prices = prev.get("prices", {})
     prev_status = prev.get("status", {})
 
-    prices, status = scrape_all(shops)
+    prices, status, skipped = scrape_all(shops)
+    shops = [s for s in shops if s["id"] not in skipped]
+    shops_by_id = {s["id"]: s for s in shops}
 
     # 失敗した業者は前回価格を引き継ぐ(サイトには「更新停止中」表示用のstatusを渡す)
     for sid in list(prices):

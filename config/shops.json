@@ -6,6 +6,7 @@
     { "id": "ichome",   "name": "買取一丁目",      "url": "https://www.1-chome.com/mobile" },
     { "id": "mix",      "name": "モバイルミックス", "url": "https://mobile-mix.jp/?category=7" },
     { "id": "somurie",  "name": "買取ソムリエ",    "url": "https://somurie-kaitori.com/products?category=1" },
+    { "id": "enoking",  "name": "買取エノキング",  "url": "https://newenoking-kaitori.com/products" },
     { "id": "morimori", "name": "森森買取",        "url": "https://www.morimori-kaitori.jp/category/03" },
     { "id": "rudeya",   "name": "買取ルデヤ",      "url": "https://kaitori-rudeya.com/" },
     { "id": "wiki",     "name": "買取wiki",        "url": "https://iphonekaitori.tokyo/series/iphone" },
