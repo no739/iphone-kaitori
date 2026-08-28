@@ -129,24 +129,61 @@ def _fmt_ts(iso):
         return None
 
 
-def build_change_message(nz, shops_by_id, changes, now, prev_updated=None):
+def build_change_message(nz, shops_by_id, changes, now, prev_updated=None,
+                         prices=None):
+    """機種×容量ごとに1行へ集約した変更速報(カラー・業者はまとめる)。"""
     lines = [f"**📱 買取価格 変更検知** ({now.strftime('%m/%d %H:%M')} の巡回)"]
     ups = sum(1 for c in changes if c["new"] > c["old"])
     downs = len(changes) - ups
     lines.append(f"変更 {len(changes)}件 (値上げ▲{ups} / 値下げ▼{downs})")
     lines.append("")
-    for c in sorted(changes, key=lambda c: (c["key"], c["shop"]))[:80]:
-        arrow = "▲" if c["new"] > c["old"] else "▼"
-        diff = c["new"] - c["old"]
-        line = (f"{arrow} {key_label(nz, c['key'])} | "
-                f"{shops_by_id[c['shop']]['name']} "
-                f"{fmt_yen(c['old'])} → **{fmt_yen(c['new'])}** ({diff:+,})")
-        # サイトと同じく「旧価格を確認した時点 → 変更を検知した時点」を明示
-        pt = _fmt_ts(c.get("prev_ts") or prev_updated)
-        nt = _fmt_ts(c.get("ts")) or now.strftime("%m/%d %H:%M")
+
+    groups = {}  # "sid-cap" -> [changes]
+    for c in changes:
+        base = "-".join(c["key"].split("-")[:2])
+        groups.setdefault(base, []).append(c)
+
+    def base_label(base):
+        sid, cap = base.split("-")
+        sr = next(s for s in nz.series if s["id"] == sid)
+        cap_i = int(cap)
+        cap_s = f"{cap_i // 1024}TB" if cap_i >= 1024 else f"{cap_i}GB"
+        return f"{sr['name']} {cap_s}"
+
+    def cap_max(base):
+        if not prices:
+            return None
+        m = None
+        for shop_prices in prices.values():
+            for k, v in shop_prices.items():
+                if k.startswith(base) and (m is None or v > m):
+                    m = v
+        return m
+
+    order = [f"{s['id']}-{int(c)}" for s in nz.series for c in s["capacities"]]
+    for base in sorted(groups, key=lambda b: order.index(b) if b in order else 999):
+        cs = groups[base]
+        up_shops = sorted({c["shop"] for c in cs if c["new"] > c["old"]})
+        down_shops = sorted({c["shop"] for c in cs if c["new"] < c["old"]})
+        diffs = sorted({c["new"] - c["old"] for c in cs}, key=abs)
+        rng = f"{diffs[0]:+,}" if len(diffs) == 1 else f"{diffs[0]:+,}〜{diffs[-1]:+,}"
+        if up_shops and down_shops:
+            arrow, desc = "↕", f"値上げ{len(up_shops)}社・値下げ{len(down_shops)}社 ({rng})"
+        elif up_shops:
+            arrow, desc = "▲", f"{len(up_shops)}社が値上げ ({rng})"
+        else:
+            arrow, desc = "▼", f"{len(down_shops)}社が値下げ ({rng})"
+        line = f"{arrow} **{base_label(base)}** {desc}"
+        m = cap_max(base)
+        if m:
+            line += f" / 最高値 {fmt_yen(m)}"
+        pts = [c.get("prev_ts") for c in cs if c.get("prev_ts")] or [prev_updated]
+        pt = _fmt_ts(min(p for p in pts if p) if any(pts) else None)
         if pt:
-            line += f"\n　　 ({pt}時点 → {nt}時点)"
+            line += f"({pt}時点比)"
         lines.append(line)
+    lines.append("")
+    lines.append("業者ごとの内訳はサイトの「最近の変更」でどうぞ")
     if len(changes) > 80:
         lines.append(f"…ほか {len(changes) - 80} 件(サイト参照)")
     return "\n".join(lines)
@@ -250,7 +287,8 @@ def main():
 
     # ---- 通知 ----
     if changes:
-        discord.send(build_change_message(nz, shops_by_id, changes, now, prev_updated))
+        discord.send(build_change_message(nz, shops_by_id, changes, now,
+                                          prev_updated, prices))
     if new_failures:
         names = "、".join(shops_by_id[s]["name"] for s in new_failures)
         errs = "\n".join(f"- {shops_by_id[s]['name']}: {status[s]['error']}"
