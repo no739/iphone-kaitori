@@ -134,9 +134,21 @@ def enoking():
             page.fill("#email", email)
             page.fill("#password", password)
             page.click("button:has-text('ログイン')")
-            page.wait_for_timeout(4000)
-            if "/login" in page.url and page.locator("#email").count():
-                raise RuntimeError("エノキングにログインできませんでした(メール/パスワードを確認)")
+            try:
+                page.wait_for_load_state("networkidle", timeout=20000)
+            except Exception:  # noqa: BLE001
+                pass
+            page.wait_for_timeout(3000)
+            body = page.content()
+            if "パスワード" in body and page.locator("#email").count():
+                # まだログインフォームが出ている = 失敗
+                err = ""
+                for sel in (".error", "[class*=error]", "[role=alert]"):
+                    if page.locator(sel).count():
+                        err = page.locator(sel).first.inner_text()[:100]
+                        break
+                raise RuntimeError(f"エノキングにログインできませんでした"
+                                   f"(url={page.url} エラー表示={err or 'なし'})")
         # ---- カテゴリごとに価格取得 ----
         for cat_id in cats.values():
             page.goto(f"https://newenoking-kaitori.com/products?cat={cat_id}",
@@ -164,6 +176,14 @@ def enoking():
                 if price:
                     offers.append({"text": name, "price": price + "円",
                                    "cond": "新品未開封"})
+        if not offers:
+            # 診断情報付きで失敗させる(ログインは通ったが価格が見えない等)
+            html = page.content()
+            n_names = len(re.findall(r"iPhone ?17|iPhone ?Air", html))
+            raise RuntimeError(
+                f"エノキング: 価格を抽出できず (url={page.url} "
+                f"商品名={n_names}件 問い合わせ表示={'問い合わせ' in html} "
+                f"ログアウト表示={'ログアウト' in html})")
     finally:
         page.close()
     return offers
