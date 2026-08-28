@@ -55,6 +55,19 @@ def main():
     r = git("push", "origin", "main")
     print("push:", "OK" if r.returncode == 0 else r.stderr[:300])
 
+    # 保険: GitHubのcronが飛んだ時のために、こちらから巡回を起動しておく
+    # (cronも動いた場合は2回目が「変更なし」になるだけで実害はない)
+    try:
+        t = subprocess.run(["gh", "workflow", "run", "買取価格チェック",
+                            "-R", "no739/iphone-kaitori"],
+                           capture_output=True, text=True, timeout=60,
+                           env={**os.environ,
+                                "PATH": os.environ.get("PATH", "") +
+                                ":/usr/local/bin:/opt/homebrew/bin"})
+        print("CI起動:", "OK" if t.returncode == 0 else t.stderr[:200])
+    except Exception as e:  # noqa: BLE001
+        print("CI起動失敗(無視):", e)
+
 
 if __name__ == "__main__":
     sys.exit(main())
