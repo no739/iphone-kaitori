@@ -184,6 +184,14 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 @media (max-width: 640px){
   #menubtn{top:10px;left:10px;width:42px;height:42px}
   #menupanel{padding-top:74px}
+  /* ヒーローはApple風に余白多め・文字は控えめに */
+  header.hero{padding:76px 28px 46px}
+  header.hero h1{font-size:30px;line-height:1.18;letter-spacing:-.02em}
+  header.hero p.sub{font-size:15.5px;margin-top:12px;line-height:1.5}
+  header.hero p.meta{font-size:11.5px;margin-top:16px;line-height:1.6}
+  header.hero p.meta .note{display:block;opacity:.85}  /* 補足は改行して2行に整える */
+  header.hero .cta{margin-top:24px;gap:10px}
+  header.hero .btn{font-size:14px;padding:9px 18px}
   /* スマホは表の縦スクロールをページと一体化(iOSで上下に引っかかる問題の根治)。
      機種ごと表示になったので表が短く、ヘッダ固定なしでも実用上困らない */
   .tablewrap{max-height:none}
@@ -405,9 +413,9 @@ async function boot(){
     }
   }
   const up = new Date(DB.updated);
-  document.getElementById("updated").textContent =
+  document.getElementById("updated").innerHTML =
     "更新日時: " + up.toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) +
-    " (11〜19時の2時間おきに自動更新)";
+    '<span class="note">11〜19時の2時間おきに自動更新</span>';
   document.getElementById("subline").textContent =
     `新品未開封。${DB.shops.length}社を、2時間ごとに。`;
   buildPicker(); buildTable(); buildChanges(); buildFooter();
