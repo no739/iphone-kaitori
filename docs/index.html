@@ -134,8 +134,10 @@ thead th .fav{
   -webkit-tap-highlight-color:transparent;
 }
 /* 見た目は変えずタップ範囲だけ広げる(指で押しやすく、リンク誤タップを防ぐ) */
-thead th .fav::after{content:"";position:absolute;left:-9px;right:-7px;top:-11px;bottom:-11px}
-thead th .fav:active{transform:scale(1.25)}
+thead th .fav:empty{display:none}
+thead th.shop{cursor:pointer;-webkit-touch-callout:none;user-select:none}
+thead th.favflash{animation:favflash .5s ease-out}
+@keyframes favflash{0%{background:color-mix(in srgb,#f5a623 45%,transparent)}100%{background:transparent}}
 thead th .fav.on{color:#f5a623}
 thead th.shop a{display:inline-block;padding:2px 0}
 thead th.isfav{background:color-mix(in srgb, var(--accent) 9%, var(--card))}
@@ -538,10 +540,10 @@ function buildFavBar(){
   if(FAV_MODE === "OFF"){ bar.style.display = "none"; return; }
   bar.style.display = "";
   const hint = FAV_MODE === "A"
-    ? "業者名の★をタップすると、その業者が左端に固定されます"
+    ? "業者名を長押しすると★が付き、その業者が左端に固定されます"
     : FAV_MODE === "B"
-    ? "業者名の★をタップしてお気に入り登録。下のボタンで表示を切り替えます"
-    : "★をタップすると左端に固定。下のボタンでお気に入りだけ表示に切り替えできます";
+    ? "業者名を長押しでお気に入り登録。下のボタンで表示を切り替えます"
+    : "業者名を長押しで左端に固定。下のボタンでお気に入りだけ表示にできます";
   let html = `<span class="favhint">${hint}</span>`;
   if(FAV_MODE === "B" || FAV_MODE === "AB"){
     html += `<button id="favtoggle" class="btn ghost">${favOnly ? "全21社を表示" : `お気に入りだけ表示${favs.length?`(${favs.length})`:""}`}</button>`;
@@ -559,7 +561,7 @@ function buildTable(){
   for(const s of shops){
     const stale = !s.ok;
     const star = FAV_MODE === "OFF" ? "" :
-      `<span class="fav${isFav(s.id)?" on":""}" data-fav="${s.id}">${isFav(s.id)?"★":"☆"}</span>`;
+      `<span class="fav${isFav(s.id)?" on":""}">${isFav(s.id)?"★":""}</span>`;
     // その業者の価格を最後に実際に取得した時刻をヘッダ下に表示
     let ut = "";
     const iso = (DB.shop_updated||{})[s.id];
@@ -571,7 +573,7 @@ function buildTable(){
         : d.toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
       ut = `<span class="ut${stale?' utstale':''}">${t}</span>`;
     }
-    html += `<th class="shop${stale?' stale':''}${isFav(s.id)?' isfav':''}"${stale?' title="取得エラー: 前回値を表示中"':''}>${star}<a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a>${ut}</th>`;
+    html += `<th data-shop="${s.id}" class="shop${stale?' stale':''}${isFav(s.id)?' isfav':''}"${stale?' title="取得エラー: 前回値を表示中"':''}>${star}<a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a>${ut}</th>`;
   }
   html += "</tr></thead><tbody>";
 
@@ -613,8 +615,27 @@ function buildTable(){
   }
   html += "</tbody>";
   t.innerHTML = html;
-  t.querySelectorAll("[data-fav]").forEach(el => {
-    el.onclick = (e) => { e.preventDefault(); e.stopPropagation(); toggleFav(el.dataset.fav); };
+  // 業者名ヘッダを長押しでお気に入り登録/解除(タップは通常どおりサイトへのリンク)
+  t.querySelectorAll("th.shop[data-shop]").forEach(th => {
+    let timer = null, fired = false;
+    const start = () => {
+      fired = false;
+      timer = setTimeout(() => {
+        fired = true;
+        th.classList.add("favflash");
+        if(navigator.vibrate) navigator.vibrate(15);
+        toggleFav(th.dataset.shop);
+      }, 450);
+    };
+    const cancel = () => { clearTimeout(timer); };
+    th.addEventListener("touchstart", start, {passive:true});
+    th.addEventListener("touchend", (e) => { cancel(); if(fired) e.preventDefault(); });
+    th.addEventListener("touchmove", cancel, {passive:true});
+    th.addEventListener("mousedown", start);
+    th.addEventListener("mouseup", cancel);
+    th.addEventListener("mouseleave", cancel);
+    th.addEventListener("contextmenu", (e) => e.preventDefault());
+    th.querySelector("a").addEventListener("click", (e) => { if(fired){ e.preventDefault(); } });
   });
 }
 
@@ -647,13 +668,12 @@ async function buildChanges(){
       b.onclick = () => { changeShop = id; changeLimit = 10; buildChanges(); };
       return b;
     };
+    const favCount = all.filter(c => isFav(c.shop)).length;
     picker.replaceChildren(
       mkS("all", "すべて", all.length),
-      ...DB.shops.filter(s => counts[s.id])
-        .sort((a,b) => counts[b.id] - counts[a.id])
-        .map(s => mkS(s.id, s.name, counts[s.id])));
+      mkS("fav", "お気に入りのみ", favCount));
 
-    const list = changeShop === "all" ? all : all.filter(c => c.shop === changeShop);
+    const list = changeShop === "fav" ? all.filter(c => isFav(c.shop)) : all;
     more.style.display = list.length > changeLimit ? "" : "none";
     more.textContent = `もっと見る(残り${Math.max(0, list.length - changeLimit)}件)`;
     more.onclick = () => { changeLimit += 20; buildChanges(); };
