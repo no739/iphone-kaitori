@@ -121,7 +121,7 @@ section.block h2{font-size:clamp(24px,4vw,36px);font-weight:600;letter-spacing:-
 section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 .changes{list-style:none;font-size:13.5px}
 .changes li{padding:9px 0;border-bottom:1px solid var(--bg2);display:flex;gap:10px;flex-wrap:wrap}
-.changes .t{color:var(--fg2);min-width:160px}
+.changes .t{color:var(--fg2);min-width:230px;font-variant-numeric:tabular-nums}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:18px}
 .card{background:var(--bg2);border-radius:18px;padding:22px}
 .card h3{font-size:17px;font-weight:600;margin-bottom:6px}
@@ -333,14 +333,12 @@ async function buildChanges(){
     if(!list.length){ ul.innerHTML = "<li>まだ変更履歴はありません。</li>"; return; }
     const shopName = id => (DB.shops.find(s=>s.id===id)||{}).name || id;
     const short = iso => new Date(iso).toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-    const hm = iso => new Date(iso).toLocaleString("ja-JP",{hour:"2-digit",minute:"2-digit"});
     ul.innerHTML = list.slice(0,50).map(c=>{
       const up = c.new > c.old;
-      // 「どの時点の価格 → どの時点の価格」かを明示する
-      let t = short(c.ts);
+      // 「どの時点の価格 → どの時点の価格」を両方フル時刻で明示する
+      let t = `${short(c.ts)}時点で検知`;
       if(c.prev_ts){
-        const sameDay = new Date(c.prev_ts).toDateString() === new Date(c.ts).toDateString();
-        t = `${short(c.prev_ts)} → ${sameDay ? hm(c.ts) : short(c.ts)}`;
+        t = `${short(c.prev_ts)}時点 → ${short(c.ts)}時点`;
       }
       return `<li><span class="t">${t}</span><span>${labelOf(c.key)}</span>` +
         `<span>${shopName(c.shop)}</span>` +

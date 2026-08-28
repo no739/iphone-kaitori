@@ -118,11 +118,11 @@ def fmt_yen(v):
 
 
 def build_change_message(nz, shops_by_id, changes, now, prev_updated=None):
-    when = now.strftime("%m/%d %H:%M")
+    when = f"{now.strftime('%m/%d %H:%M')}時点"
     if prev_updated:
         try:
             pt = datetime.fromisoformat(prev_updated).strftime("%m/%d %H:%M")
-            when = f"{pt} 時点 → {when}"
+            when = f"{pt}時点 → {when}"
         except ValueError:
             pass
     lines = [f"**📱 買取価格 変更検知** ({when})"]
