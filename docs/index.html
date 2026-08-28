@@ -89,6 +89,9 @@ thead th{
   padding:12px 10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;
 }
 thead th a{color:inherit}
+thead th.shop a{color:var(--accent);font-weight:600}
+thead th.shop a:hover{text-decoration:underline}
+thead th.stale a{color:var(--down)}
 thead th.left, td.left{text-align:left}
 th.sticky, td.sticky{position:sticky;left:0;background:var(--card);z-index:2}
 thead th.sticky{z-index:4}
@@ -261,7 +264,7 @@ function buildTable(){
   html += '<th class="left sticky">カラー</th><th>定価</th><th>最高値</th><th>差額</th><th>買取率</th>';
   for(const s of shops){
     const stale = !s.ok;
-    html += `<th${stale?' class="stale" title="取得エラー: 前回値を表示中"':''}><a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a></th>`;
+    html += `<th class="shop${stale?' stale':''}"${stale?' title="取得エラー: 前回値を表示中"':''}><a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a></th>`;
   }
   html += "</tr></thead><tbody>";
 
