@@ -577,7 +577,7 @@ async function buildChanges(){
     const picker = document.getElementById("shoppicker");
     const mkS = (id, label, n) => {
       const b = document.createElement("button");
-      b.textContent = n != null ? `${label} ${n}` : label;
+      b.textContent = n != null ? `${label}_${n}` : label;
       if(id === changeShop) b.classList.add("active");
       b.onclick = () => { changeShop = id; changeLimit = 10; buildChanges(); };
       return b;
