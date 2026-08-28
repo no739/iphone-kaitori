@@ -236,6 +236,23 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   .formbtns .btn{flex:1;text-align:center}
 }
 
+/* スマホ用: 今スクロールで見えている業者名を上部にピルで表示 */
+#shopbar{
+  position:fixed;top:0;left:0;right:0;z-index:46;display:none;
+  padding:8px 12px;gap:6px;justify-content:center;flex-wrap:nowrap;overflow:hidden;
+  background:var(--nav);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line);
+  pointer-events:none;
+}
+#shopbar.on{display:flex}
+#shopbar .sb{
+  font-size:12.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;
+  padding:5px 11px;border-radius:980px;background:var(--card);color:var(--accent);
+  border:1px solid var(--line);
+}
+#shopbar .sb.fav{border-color:#f5a623;color:#f5a623}
+#shopbar .sb .t{display:block;font-size:9.5px;font-weight:400;color:var(--fg2);text-align:center}
+
 /* 画面上部に追従する業者名ヘッダ(表が長くてもどの業者か分かる) */
 #floathead{
   position:fixed;z-index:45;display:none;overflow:hidden;pointer-events:none;
@@ -761,11 +778,41 @@ let fhRebuild = null;
     }
     inner.replaceChildren(clone);
   };
+  // スマホは列が画面幅に収まらないので、見えている業者名だけをピルで表示する
+  const bar = document.createElement("div");
+  bar.id = "shopbar";
+  document.body.appendChild(bar);
+  const isPhone = () => matchMedia("(max-width: 640px)").matches;
+
+  const syncBar = (show) => {
+    if(!show){ bar.classList.remove("on"); return; }
+    const ths = [...table.querySelectorAll("thead th.shop")];
+    const wr = wrap.getBoundingClientRect();
+    // 画面内に半分以上見えている業者列を拾う
+    const vis = ths.filter(th => {
+      const r = th.getBoundingClientRect();
+      return r.right > wr.left + 8 && r.left < wr.right - 8;
+    }).slice(0, 3);
+    if(!vis.length){ bar.classList.remove("on"); return; }
+    bar.innerHTML = vis.map(th => {
+      const name = th.querySelector("a").textContent.replace("⚠️", "");
+      const t = th.querySelector(".ut");
+      return `<span class="sb${th.classList.contains("isfav") ? " fav" : ""}">${name}` +
+             (t ? `<span class="t">${t.textContent}</span>` : "") + `</span>`;
+    }).join("");
+    bar.classList.add("on");
+  };
+
   const sync = () => {
     const r = wrap.getBoundingClientRect();
     const headH = table.tHead ? table.tHead.getBoundingClientRect().height : 0;
-    // 表のヘッダが画面外に出ていて、まだ表の途中なら追従ヘッダを出す
     const show = r.top < 0 && r.bottom > headH + 80;
+    if(isPhone()){
+      holder.style.display = "none";
+      syncBar(show);
+      return;
+    }
+    bar.classList.remove("on");
     holder.style.display = show ? "block" : "none";
     if(show){
       holder.style.top = "0px";
