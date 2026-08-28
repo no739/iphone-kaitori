@@ -98,8 +98,11 @@ thead th.sticky{z-index:4}
 tbody td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--bg2);white-space:nowrap;font-variant-numeric:tabular-nums}
 tr.group td{
   background:var(--bg2);font-weight:600;font-size:14px;text-align:left;
-  padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;z-index:1;
+  padding:10px 12px;border-bottom:1px solid var(--line);
 }
+/* 機種名は1列目セルに入れて左端固定し、文字だけ右へはみ出させる
+   (colspan+stickyがiOS Safariで効かないため) */
+tr.group td.gtitle{white-space:nowrap;overflow:visible;background:var(--bg2)}
 td.max{background:var(--hl);box-shadow:inset 0 0 0 1.5px var(--hl-border);border-radius:6px;font-weight:700;color:var(--hl-fg);font-size:13.5px}
 td.max .d{font-weight:600}
 td .d{display:block;font-size:10.5px;font-weight:500;line-height:1.2}
@@ -149,6 +152,7 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   td.max{font-size:12.5px}
   tr.group td{font-size:13px;padding:9px 10px}
   td.left.sticky{max-width:118px;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+  tr.group td.gtitle{overflow:visible;text-overflow:clip;font-size:13px}
   .changes li{display:block;padding:11px 0}
   .changes .t{display:block;min-width:0;font-size:11.5px;margin-bottom:3px}
   .changes li>span:not(.t){margin-right:8px}
@@ -315,7 +319,7 @@ function buildTable(){
   html += "</tr></thead><tbody>";
 
   for(const g of keyRows()){
-    html += `<tr class="group"><td class="sticky" colspan="2">${g.series.name} ${g.capLabel}</td><td colspan="${3+shops.length}"></td></tr>`;
+    html += `<tr class="group"><td class="left sticky gtitle">${g.series.name} ${g.capLabel}</td><td colspan="${4+shops.length}"></td></tr>`;
     for(const row of g.list){
       const cells = shops.map(s => ({shop:s, ...cell(s.id,row.key)}));
       const max = Math.max(...cells.map(c => c.p ?? 0));
