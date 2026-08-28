@@ -232,10 +232,10 @@ thead th.wave{animation:thwave .55s cubic-bezier(.34,1.56,.64,1) both}
 
 /* ---- 遊び心: たまにカニが画面下を横断する ---- */
 #crab{
-  position:fixed;left:0;bottom:14px;z-index:60;pointer-events:none;
+  position:fixed;left:0;top:70vh;z-index:60;pointer-events:none;  /* 上から7割の高さ */
   width:64px;will-change:transform;visibility:hidden;
 }
-#crab .crabunit{position:absolute;bottom:0;left:0;width:100%}
+#crab .crabunit{position:absolute;top:0;left:0;width:100%}
 #crab.walk{visibility:visible;animation:crabwalk var(--ct, 8s) linear forwards}
 @keyframes crabwalk{
   0%{opacity:0;transform:translate3d(-90px,0,0)}
@@ -658,10 +658,11 @@ document.getElementById("wh-join").onclick = joinSend;
     </g>
   </svg>`;
   // 3匹の隊列(前後にずらし、大きさと歩行テンポを少し変える)
+  // 3匹を同じ大きさで横一列に並べる
   const troop = [
-    {x:0,   y:0,  s:1.00, sp:.20},
-    {x:-46, y:3,  s:.80, sp:.24},
-    {x:-84, y:-2, s:.66, sp:.18},
+    {x:0,   y:0, s:1, sp:.20},
+    {x:-72, y:0, s:1, sp:.24},
+    {x:-144,y:0, s:1, sp:.18},
   ];
   crab.innerHTML = troop.map(c =>
     `<div class="crabunit" style="transform:translate(${c.x}px,${c.y}px) scale(${c.s});--sp:${c.sp}s">${CRAB_SVG}</div>`
@@ -672,11 +673,9 @@ document.getElementById("wh-join").onclick = joinSend;
     void crab.offsetWidth;                       // アニメをリセット
     const dur = 6 + Math.random() * 3;           // 6〜9秒でカサカサッと素早く横断
     crab.style.setProperty("--ct", dur + "s");
-    crab.style.bottom = (10 + Math.random() * 26) + "px";
-    crab.style.width = (52 + Math.random() * 22) + "px";
-    // たまに右から左へ(カニらしく横歩き)
+    crab.style.top = (68 + Math.random() * 4) + "vh";  // 画面の7割ほどの高さ
+    crab.style.width = (56 + Math.random() * 12) + "px";
     crab.style.transform = "";
-    crab.style.scale = Math.random() < .35 ? "-1 1" : "1 1";
     crab.classList.add("walk");
     setTimeout(schedule, dur * 1000 + 500);
   }
