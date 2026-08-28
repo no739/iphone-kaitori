@@ -29,6 +29,7 @@ body{
     -apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic Pro",
     "ヒラギノ角ゴ Pro W3",Meiryo,メイリオ,Helvetica,Arial,sans-serif;
   background:var(--bg); color:var(--fg);
+  width:max-content;min-width:100%;   /* 表の幅までページを広げ、横スクロールをページ自体に任せる */
   font-size:17px; line-height:1.47059; font-weight:400;
   letter-spacing:-.022em;
   -webkit-font-smoothing:antialiased;
@@ -111,15 +112,26 @@ header.hero .cta{margin-top:20px;display:flex;gap:16px;justify-content:center;fl
 .picker button.active{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 
 /* ---- table ---- */
-main{max-width:1400px;margin:0 auto;padding:10px 22px 40px}
+/* 表以外のセクションは横パン中も画面に留まる(1スクロール面+sticky構成) */
+header.hero, footer, section.block{position:sticky;left:0;width:100vw;box-sizing:border-box}
+main{width:max-content;min-width:100%;padding:10px 22px 40px}
+main .picker, #favbar, #loading{position:sticky;left:0;max-width:calc(100vw - 44px)}
+main .picker{margin-left:0;margin-right:0}   /* 広いページ内で中央に流れないよう左に固定 */
 .tablewrap{
-  overflow-x:auto;   /* 横だけ表の中でスクロール。縦はページと一体(なめらか・詰まりなし) */
+  width:max-content;   /* 枠は表のサイズに合わせる。スクロールはページ側で行う */
   border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card);
-  /* 表の端まで行ったらページ全体のスクロールに自然に繋がる(閉じ込めない) */
 }
 table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;letter-spacing:-.01em}
 thead th{
   position:sticky;top:0;background:var(--card);z-index:3;
+}
+#pricetable.pinned thead th{box-shadow:0 1px 0 var(--line)}
+@media (max-width: 640px){
+  #pricetable.pinned thead th::before{
+    content:"";position:absolute;left:0;right:0;bottom:100%;height:120px;background:var(--bg);
+  }
+}
+thead th{
   font-weight:600;color:var(--fg2);font-size:11.5px;
   padding:12px 10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;
 }
@@ -156,7 +168,7 @@ thead th.favflash{animation:favflash .5s ease-out}
 thead th .fav.on{color:#f5a623}
 thead th.shop .sname{display:inline-block;padding:2px 0}
 thead th.isfav{background:color-mix(in srgb, var(--accent) 9%, var(--card))}
-#favbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1400px;margin:14px auto 0;padding:0 22px}
+#favbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 0;padding:0 22px}
 .favhint{font-size:12.5px;color:var(--fg2)}
 #favtoggle{font-size:13px;padding:6px 14px}
 thead th .ut.utstale{color:var(--down);font-weight:600}
@@ -188,7 +200,7 @@ th.stale{color:var(--down)}
 .dot.sage{background:#a9b8a0}.dot.lavender{background:#c9bcd9}
 
 /* ---- sections ---- */
-section.block{max-width:1024px;margin:0 auto;padding:48px 22px}
+section.block{margin:0;padding:48px max(22px, calc((100vw - 1024px)/2))}
 section.block h2{font-size:clamp(24px,4vw,36px);font-weight:600;letter-spacing:-.015em;margin-bottom:14px}
 section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 .changes{list-style:none;font-size:13.5px}
@@ -245,48 +257,17 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 }
 
 /* スマホ用: 今スクロールで見えている業者名を上部にピルで表示 */
-#shopbar{
-  position:fixed;top:0;left:0;right:0;z-index:46;display:none;
-  padding:8px 12px;gap:6px;justify-content:center;flex-wrap:nowrap;overflow:hidden;
-  background:var(--nav);-webkit-backdrop-filter:saturate(180%) blur(20px);
-  backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line);
-  pointer-events:none;
-}
-#shopbar.on{display:flex}
-#shopbar .sb{
-  font-size:12.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;
-  padding:5px 11px;border-radius:980px;background:var(--card);color:var(--accent);
-  border:1px solid var(--line);
-}
-#shopbar .sb.fav{border-color:#f5a623;color:#f5a623}
-#shopbar .sb .t{display:block;font-size:9.5px;font-weight:400;color:var(--fg2);text-align:center}
 
 /* 画面上部に追従する業者名ヘッダ(表が長くてもどの業者か分かる) */
-#floathead{
-  position:fixed;z-index:62;display:none;overflow:hidden;pointer-events:none;
-  background:var(--card);border-bottom:1px solid var(--line);
-  box-shadow:0 3px 10px rgba(0,0,0,.3);border-radius:0;
-  isolation:isolate;   /* 下の表が透けて見えないよう独立した重なり層にする */
-}
 /* 画面最上部(時計・電波のあたり)を常に塞ぐ帯。表がその下を通り抜けても覗かない */
 #topmask{
   position:fixed;top:0;left:0;right:0;z-index:61;pointer-events:none;
   height:0;background:var(--bg);
 }
 
-#floathead{background:var(--bg)}
-#floathead table{background:var(--card)}
-#floathead th{background:var(--card) !important}
-#floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
-#floathead th{box-shadow:none}
-#floathead th.sticky{
-  position:sticky !important;left:0;z-index:20 !important;background:var(--card) !important;
-  box-shadow:6px 0 8px -4px rgba(0,0,0,.45);   /* 下に潜る列との境界を明示 */
-}
-#floathead th:not(.sticky){position:static !important}
 
 /* 横スクロールを示すリッチな初回演出: 光のスイープ+ラバーバンドのチラ見せ */
-#tablezone{position:relative}
+#tablezone{position:relative;width:max-content}
 #scrollhint{
   position:absolute;inset:1px;border-radius:18px;overflow:hidden;
   pointer-events:none;z-index:6;display:none;
@@ -793,70 +774,15 @@ async function joinSend(){
 document.getElementById("wh-join").onclick = joinSend;
 
 // ---- 業者名ヘッダを画面上部に追従表示(PC/スマホ共通) ----
-let fhRebuild = null;
+// ヘッダが画面上部に固定されている間だけ .pinned を付ける(スマホの時計エリア目隠し用)
 (() => {
   const wrap = document.getElementById("tablewrap");
-  const table = document.getElementById("pricetable");
-  // 追従ヘッダ: 本物のスクロール容器としてヘッダ行を複製表示する。
-  // scrollLeftを同期するだけなので、カラー列の左固定はブラウザ標準のstickyがそのまま効く。
-  const holder = document.createElement("div");
-  holder.id = "floathead";
-  document.body.appendChild(holder);
-
-  fhRebuild = () => {
-    if(!table.tHead) return;
-    const clone = table.cloneNode(false);
-    clone.appendChild(table.tHead.cloneNode(true));
-    clone.style.width = table.offsetWidth + "px";
-    const src = table.tHead.rows[0].cells, dst = clone.tHead.rows[0].cells;
-    for(let i = 0; i < src.length; i++){
-      dst[i].style.width = src[i].getBoundingClientRect().width + "px";
-      dst[i].style.boxSizing = "border-box";
-    }
-    holder.replaceChildren(clone);
-    holder.scrollLeft = wrap.scrollLeft;
-  };
-
-  const isPhone = () => matchMedia("(max-width: 640px)").matches;
-  let last = {show:null, pad:-1, left:-1, width:-1};
-  const sync = () => {
-    const r = wrap.getBoundingClientRect();
-    const headH = table.tHead ? table.tHead.offsetHeight : 0;
-    // スマホは時計・電波の裏に表が透けるので、ヘッダ自体を上に延長して塞ぐ
-    const pad = isPhone() ? 62 : 0;
-    const show = r.top < pad && r.bottom > headH + 120;
-    if(show !== last.show){ holder.style.display = show ? "block" : "none"; last.show = show; }
-    if(!show) return;
-    if(pad !== last.pad){
-      // iOS Safariは固定要素を画面上端より下に置く瞬間があり、その隙間にページが透ける。
-      // ヘッダを画面外(上)へ70px突き抜けさせて、隙間ごと覆う。
-      holder.style.top = pad ? "-70px" : "0px";
-      holder.style.paddingTop = (pad ? pad + 70 : 0) + "px";
-      last.pad = pad;
-    }
-    const L = Math.round(r.left), W = Math.round(r.width);
-    if(L !== last.left){ holder.style.left = L + "px"; last.left = L; }
-    if(W !== last.width){ holder.style.width = W + "px"; last.width = W; }
-    if(holder.scrollLeft !== wrap.scrollLeft) holder.scrollLeft = wrap.scrollLeft;
-  };
-  // スクロールごとではなく描画フレームごとに1回だけ計算する(カクつき防止)
-  let raf = 0;
-  const onScroll = () => { if(!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); };
-  // 横スクロール中: 位置計算はせず、ヘッダの横位置合わせだけを行う(軽量)
-  wrap.addEventListener("scroll", () => {
-    if(holder.scrollLeft !== wrap.scrollLeft) holder.scrollLeft = wrap.scrollLeft;
-  }, {passive:true});
-  // ヘッダ表示中の横ホイールは、表とヘッダを同一フレームで動かして遅れゼロにする
-  wrap.addEventListener("wheel", (e) => {
-    if(holder.style.display !== "block") return;
-    if(Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-    e.preventDefault();
-    wrap.scrollLeft += e.deltaX;
-    holder.scrollLeft = wrap.scrollLeft;
-  }, {passive:false});
-  addEventListener("scroll", onScroll, {passive:true});
-  addEventListener("resize", () => { fhRebuild(); last = {show:null, pad:-1, left:-1, width:-1}; sync(); });
-  setTimeout(() => { fhRebuild(); sync(); }, 800);
+  const t = document.getElementById("pricetable");
+  const sentinel = document.createElement("div");
+  wrap.parentNode.insertBefore(sentinel, wrap);
+  new IntersectionObserver(([e]) => {
+    t.classList.toggle("pinned", !e.isIntersecting && e.boundingClientRect.top < 0);
+  }).observe(sentinel);
 })();
 
 // ---- 遊び心: たまにカニが画面下をカサカサ横断する ----
@@ -993,11 +919,12 @@ const HINT_PATTERN = (new URLSearchParams(location.search).get("hint") || "C2").
 function setupScrollHint(){
   const wrap = document.getElementById("tablewrap");
   const hint = document.getElementById("scrollhint");
-  if(wrap.scrollWidth <= wrap.clientWidth + 10) return;  // 横スクロール不要なら何もしない
+  const SC = document.scrollingElement;   // 横スクロールはページ自体が行う
+  if(SC.scrollWidth <= SC.clientWidth + 10) return;  // 横スクロール不要なら何もしない
 
   // バネ+減衰バウンドで右へチラ見せして戻す(iOSのゴムバンド風)
   function rubberPeek(peakPx = 130, done){
-    const peak = Math.min(peakPx, wrap.scrollWidth - wrap.clientWidth);
+    const peak = Math.min(peakPx, SC.scrollWidth - SC.clientWidth);
     const t0 = performance.now();
     const OUT = 420, HOLD = 110, BACK = 650;
     let cancelled = false;
@@ -1016,11 +943,11 @@ function setupScrollHint(){
         const u = (t - OUT - HOLD) / BACK;
         x = Math.max(0, peak * Math.exp(-4.2 * u) * Math.cos(5.5 * u));
       }else{
-        wrap.scrollLeft = 0;
+        SC.scrollLeft = 0;
         if(done) done();
         return;
       }
-      wrap.scrollLeft = x;
+      SC.scrollLeft = x;
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
@@ -1062,7 +989,7 @@ function setupScrollHint(){
     if(!es[0].isIntersecting) return;
     io.disconnect();
     setTimeout(() => {
-      if(wrap.scrollLeft > 5) return;  // すでに触っていたら演出しない
+      if(SC.scrollLeft > 5) return;  // すでに触っていたら演出しない
       if(HINT_PATTERN === "A"){
         hint.classList.add("play");      // 光のスイープ(CSSアニメ2回)
         setTimeout(() => rubberPeek(130), 350);
