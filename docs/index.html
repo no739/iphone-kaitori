@@ -813,12 +813,7 @@ let fhRebuild = null;
     const r = wrap.getBoundingClientRect();
     const headH = table.tHead ? table.tHead.getBoundingClientRect().height : 0;
     const show = r.top < 0 && r.bottom > headH + 80;
-    if(isPhone()){
-      holder.style.display = "none";
-      syncBar(show);
-      return;
-    }
-    bar.classList.remove("on");
+    bar.classList.remove("on");   // ピル方式は不採用
     holder.style.display = show ? "block" : "none";
     if(show){
       holder.style.top = "0px";
