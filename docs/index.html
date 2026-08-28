@@ -128,6 +128,12 @@ thead th.shop a{color:var(--accent);font-weight:600}
 thead th.shop a:hover{text-decoration:underline}
 thead th.stale a{color:var(--down)}
 thead th .ut{display:block;font-size:9.5px;font-weight:400;color:var(--fg2);margin-top:1px}
+thead th .fav{display:inline-block;margin-right:3px;cursor:pointer;color:var(--fg2);font-size:12px;vertical-align:1px}
+thead th .fav.on{color:#f5a623}
+thead th.isfav{background:color-mix(in srgb, var(--accent) 9%, var(--card))}
+#favbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1400px;margin:14px auto 0;padding:0 22px}
+.favhint{font-size:12.5px;color:var(--fg2)}
+#favtoggle{font-size:13px;padding:6px 14px}
 thead th .ut.utstale{color:var(--down);font-weight:600}
 thead th.left, td.left{text-align:left}
 th.sticky, td.sticky{position:sticky;left:0;background:var(--card);z-index:2}
@@ -302,6 +308,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 
 <main id="table">
   <div class="picker" id="picker"></div>
+  <div id="favbar" style="display:none"></div>
   <div id="loading">価格データを読み込んでいます…</div>
   <div id="tablezone">
     <div class="tablewrap" id="tablewrap" style="display:none">
@@ -423,7 +430,7 @@ async function boot(){
     '<span class="note">11〜19時の2時間おきに自動更新</span>';
   document.getElementById("subline").textContent =
     `新品未開封。${DB.shops.length}社を、2時間ごとに。`;
-  buildPicker(); buildTable(); buildChanges(); buildFooter();
+  buildPicker(); buildTable(); buildFavBar(); buildChanges(); buildFooter();
   document.getElementById("loading").style.display = "none";
   document.getElementById("tablewrap").style.display = "";
   // 表の描画が終わって本当の高さが確定したら、位置を合わせ直してダミーの高さを解除
@@ -491,13 +498,58 @@ function yesterdayMax(key){
   return m;
 }
 
+// ---- お気に入り業者(★) ----
+// FAV_MODE: A=★を左に固定 / B=★だけ表示の切替 / AB=両方 / off=無効
+const FAV_MODE = (new URLSearchParams(location.search).get("fav") || "off").toUpperCase();
+let favs = new Set();
+let favOnly = false;
+try{ favs = new Set(JSON.parse(localStorage.getItem("favshops") || "[]")); }catch(e){}
+function saveFavs(){
+  try{ localStorage.setItem("favshops", JSON.stringify([...favs])); }catch(e){}
+}
+function toggleFav(id){
+  favs.has(id) ? favs.delete(id) : favs.add(id);
+  saveFavs(); buildTable(); buildFavBar();
+}
+function orderedShops(){
+  let list = DB.shops;
+  if(FAV_MODE === "B" || FAV_MODE === "AB"){
+    if(favOnly && favs.size) list = list.filter(s => favs.has(s.id));
+  }
+  if(FAV_MODE === "A" || FAV_MODE === "AB"){
+    // ★を左端(最高値のすぐ右)へ。それ以外は元の順序を維持
+    list = [...list].sort((a,b) => (favs.has(b.id)?1:0) - (favs.has(a.id)?1:0));
+  }
+  return list;
+}
+function buildFavBar(){
+  const bar = document.getElementById("favbar");
+  if(!bar) return;
+  if(FAV_MODE === "OFF"){ bar.style.display = "none"; return; }
+  bar.style.display = "";
+  const hint = FAV_MODE === "A"
+    ? "業者名の★をタップすると、その業者が左端に固定されます"
+    : FAV_MODE === "B"
+    ? "業者名の★をタップしてお気に入り登録。下のボタンで表示を切り替えます"
+    : "★をタップすると左端に固定。下のボタンでお気に入りだけ表示に切り替えできます";
+  let html = `<span class="favhint">${hint}</span>`;
+  if(FAV_MODE === "B" || FAV_MODE === "AB"){
+    html += `<button id="favtoggle" class="btn ghost">${favOnly ? "全21社を表示" : `お気に入りだけ表示${favs.size?`(${favs.size})`:""}`}</button>`;
+  }
+  bar.innerHTML = html;
+  const tg = document.getElementById("favtoggle");
+  if(tg) tg.onclick = () => { favOnly = !favOnly; buildTable(); buildFavBar(); };
+}
+
 function buildTable(){
-  const shops = DB.shops;
+  const shops = orderedShops();
   const t = document.getElementById("pricetable");
   let html = "<thead><tr>";
   html += '<th class="left sticky">カラー</th><th>定価</th><th>最高値</th><th>差額</th><th>買取率</th>';
   for(const s of shops){
     const stale = !s.ok;
+    const star = FAV_MODE === "OFF" ? "" :
+      `<span class="fav${favs.has(s.id)?" on":""}" data-fav="${s.id}">${favs.has(s.id)?"★":"☆"}</span>`;
     // その業者の価格を最後に実際に取得した時刻をヘッダ下に表示
     let ut = "";
     const iso = (DB.shop_updated||{})[s.id];
@@ -509,7 +561,7 @@ function buildTable(){
         : d.toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
       ut = `<span class="ut${stale?' utstale':''}">${t}</span>`;
     }
-    html += `<th class="shop${stale?' stale':''}"${stale?' title="取得エラー: 前回値を表示中"':''}><a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a>${ut}</th>`;
+    html += `<th class="shop${stale?' stale':''}${favs.has(s.id)?' isfav':''}"${stale?' title="取得エラー: 前回値を表示中"':''}>${star}<a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a>${ut}</th>`;
   }
   html += "</tr></thead><tbody>";
 
@@ -551,6 +603,9 @@ function buildTable(){
   }
   html += "</tbody>";
   t.innerHTML = html;
+  t.querySelectorAll("[data-fav]").forEach(el => {
+    el.onclick = (e) => { e.preventDefault(); e.stopPropagation(); toggleFav(el.dataset.fav); };
+  });
 }
 
 function labelOf(key){
