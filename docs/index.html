@@ -151,6 +151,9 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   nav.globalnav .inner{justify-content:space-between;gap:6px;padding:0 16px;font-size:11px}
   nav.globalnav a{flex:0 1 auto}
   .tablewrap{max-height:74vh}
+  /* 機種ボタンは横スクロールさせず折り返して全部見せる */
+  .picker{flex-wrap:wrap;overflow:visible;gap:7px}
+  .picker button{padding:7px 14px;font-size:13px}
   header.hero{padding:44px 20px 40px}
   section.block{padding:36px 18px}
   main{padding:6px 12px 28px}
@@ -306,9 +309,12 @@ async function boot(){
 
 function buildPicker(){
   const p = document.getElementById("picker");
+  const compact = matchMedia("(max-width: 640px)").matches;
   const mk = (id, label) => {
     const b = document.createElement("button");
-    b.textContent = label; b.dataset.id = id;
+    // スマホでは「iPhone」を省いて全ボタンを画面内に収める
+    b.textContent = compact ? label.replace(/^iPhone\s*/, "") : label;
+    b.dataset.id = id;
     if(id === filter) b.classList.add("active");
     b.onclick = () => { filter = id; buildPicker(); buildTable(); };
     return b;
