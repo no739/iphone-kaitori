@@ -137,7 +137,7 @@ def build_change_message(nz, shops_by_id, changes, now, prev_updated=None,
     lines = [f"**📱 買取価格 変更検知** ({now.strftime('%m/%d %H:%M')} の巡回)"]
     ups = sum(1 for c in changes if c["new"] > c["old"])
     downs = len(changes) - ups
-    lines.append(f"変更 {len(changes)}件 (値上げ▲{ups} / 値下げ▼{downs})")
+    lines.append(f"変更 {len(changes)}件 (値上げ🟢{ups} / 値下げ🔴{downs})")
     lines.append("")
 
     groups = {}  # "sid-cap" -> [changes]
@@ -178,12 +178,12 @@ def build_change_message(nz, shops_by_id, changes, now, prev_updated=None,
             return "・".join(ns)
 
         if up_shops and down_shops:
-            arrow = "↕"
+            arrow = "🟢▲🔴▼"
             desc = f"{names(up_shops)}が値上げ / {names(down_shops)}が値下げ ({rng})"
         elif up_shops:
-            arrow, desc = "▲", f"{names(up_shops)}が値上げ ({rng})"
+            arrow, desc = "🟢▲", f"{names(up_shops)}が値上げ ({rng})"
         else:
-            arrow, desc = "▼", f"{names(down_shops)}が値下げ ({rng})"
+            arrow, desc = "🔴▼", f"{names(down_shops)}が値下げ ({rng})"
         line = f"{arrow} **{base_label(base)}** {desc}"
         m = cap_max(base)
         if m:
@@ -240,8 +240,8 @@ def build_daily_report(nz, shops_by_id, prices, y_prices, now,
                     f" ({shops_by_id[sid]['name']})")
             if base in yesterday:
                 d = p - yesterday[base][0]
-                mark = "▲" if d > 0 else ("▼" if d < 0 else "→")
-                line += f"  前日比 {mark}{d:+,}円" if d else "  前日比 ±0"
+                mark = "🟢▲" if d > 0 else "🔴▼"
+                line += f"  前日比 {mark}{d:+,}円" if d else "  前日比 ⚪±0"
             lines.append(line)
         if len(lines) > n0:
             lines.append("")   # その機種で1行以上出た時だけ区切りを入れる
