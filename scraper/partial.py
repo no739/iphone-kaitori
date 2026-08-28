@@ -6,6 +6,7 @@ Macがスリープ中だった回は、次に起きたタイミングでまと�
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -23,10 +24,13 @@ def _git(*args):
                           capture_output=True, text=True)
 
 
+GH = shutil.which("gh") or "/Users/user/bin/gh"
+
+
 def _trigger_ci():
     """GitHub側の巡回を起動(cronが飛んだ時の保険。失敗しても無視)。"""
     try:
-        t = subprocess.run(["gh", "workflow", "run", "買取価格チェック",
+        t = subprocess.run([GH, "workflow", "run", "買取価格チェック",
                             "-R", "no739/iphone-kaitori"],
                            capture_output=True, text=True, timeout=60,
                            env={**os.environ,
