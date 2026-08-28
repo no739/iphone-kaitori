@@ -125,9 +125,15 @@ thead th{
   padding:12px 10px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;
 }
 thead th a{color:inherit}
-thead th.shop a{color:var(--accent);font-weight:600}
-thead th.shop a:hover{text-decoration:underline}
-thead th.stale a{color:var(--down)}
+thead th.shop .sname{color:var(--accent);font-weight:600}
+thead th.stale .sname{color:var(--down)}
+thead th.shop .slink{
+  display:inline-block;margin-left:5px;color:var(--fg2);font-size:11px;
+  text-decoration:none;position:relative;line-height:1;
+}
+thead th.shop .slink::after{content:"";position:absolute;left:-8px;right:-8px;top:-12px;bottom:-12px}
+thead th.shop .slink:hover{color:var(--accent)}
+thead th.shop .slink:active{transform:scale(1.2)}
 thead th .ut{display:block;font-size:9.5px;font-weight:400;color:var(--fg2);margin-top:1px}
 thead th .fav{
   position:relative;display:inline-block;margin-right:7px;cursor:pointer;
@@ -145,7 +151,7 @@ thead th.favout{animation:favout 1s ease-out}
 thead th.favflash{animation:favflash .5s ease-out}
 @keyframes favflash{0%{background:color-mix(in srgb,#f5a623 45%,transparent)}100%{background:transparent}}
 thead th .fav.on{color:#f5a623}
-thead th.shop a{display:inline-block;padding:2px 0}
+thead th.shop .sname{display:inline-block;padding:2px 0}
 thead th.isfav{background:color-mix(in srgb, var(--accent) 9%, var(--card))}
 #favbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1400px;margin:14px auto 0;padding:0 22px}
 .favhint{font-size:12.5px;color:var(--fg2)}
@@ -621,7 +627,7 @@ function buildTable(){
         : d.toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
       ut = `<span class="ut${stale?' utstale':''}">${t}</span>`;
     }
-    html += `<th data-shop="${s.id}" class="shop${stale?' stale':''}${isFav(s.id)?' isfav':''}"${stale?' title="取得エラー: 前回値を表示中"':''}>${star}<a href="${s.url}" target="_blank" rel="noopener">${s.name}${stale?"⚠️":""}</a>${ut}</th>`;
+    html += `<th data-shop="${s.id}" class="shop${stale?' stale':''}${isFav(s.id)?' isfav':''}"${stale?' title="取得エラー: 前回値を表示中"':''}>${star}<span class="sname">${s.name}${stale?"⚠️":""}</span><a class="slink" href="${s.url}" target="_blank" rel="noopener" aria-label="${s.name}のサイトを開く">↗</a>${ut}</th>`;
   }
   html += "</tr></thead><tbody>";
 
@@ -795,7 +801,7 @@ let fhRebuild = null;
     }).slice(0, 3);
     if(!vis.length){ bar.classList.remove("on"); return; }
     bar.innerHTML = vis.map(th => {
-      const name = th.querySelector("a").textContent.replace("⚠️", "");
+      const name = th.querySelector(".sname").textContent.replace("⚠️", "");
       const t = th.querySelector(".ut");
       return `<span class="sb${th.classList.contains("isfav") ? " fav" : ""}">${name}` +
              (t ? `<span class="t">${t.textContent}</span>` : "") + `</span>`;
