@@ -523,7 +523,10 @@ document.getElementById("wh-join").onclick = joinSend;
 // ---- 横スクロールのヒント演出(パターン切り替え式) ----
 // A: 光のスイープ+ラバーバンドのチラ見せ
 // B: ヘッダウェーブ(業者名セルが左→右へ順に跳ねる)
-const HINT_PATTERN = "A";  // A=光スイープ+ラバーバンド(採用) / B=ヘッダウェーブ(不採用)
+// A=光スイープ+ラバーバンド(採用) / B=ヘッダウェーブ(不採用)
+// C1=業者列スライドイン / C2=2段チラ見せ
+// URLに ?hint=C1 のように付けるとお試し切り替えできる(通常はA)
+const HINT_PATTERN = (new URLSearchParams(location.search).get("hint") || "A").toUpperCase();
 
 function setupScrollHint(){
   const wrap = document.getElementById("tablewrap");
@@ -531,8 +534,8 @@ function setupScrollHint(){
   if(wrap.scrollWidth <= wrap.clientWidth + 10) return;  // 横スクロール不要なら何もしない
 
   // バネ+減衰バウンドで右へチラ見せして戻す(iOSのゴムバンド風)
-  function rubberPeek(){
-    const peak = Math.min(130, wrap.scrollWidth - wrap.clientWidth);
+  function rubberPeek(peakPx = 130, done){
+    const peak = Math.min(peakPx, wrap.scrollWidth - wrap.clientWidth);
     const t0 = performance.now();
     const OUT = 420, HOLD = 110, BACK = 650;
     let cancelled = false;
@@ -552,12 +555,28 @@ function setupScrollHint(){
         x = Math.max(0, peak * Math.exp(-4.2 * u) * Math.cos(5.5 * u));
       }else{
         wrap.scrollLeft = 0;
+        if(done) done();
         return;
       }
       wrap.scrollLeft = x;
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
+  }
+
+  // パターンC1: 業者列が右から順に滑り込んでくる
+  function columnSlideIn(){
+    const style = document.createElement("style");
+    let css = "@keyframes colin{from{transform:translateX(48px);opacity:0}to{transform:translateX(0);opacity:1}}";
+    for(let i = 6; i <= 16; i++){
+      css += `#pricetable.slidein td:nth-child(${i}),#pricetable.slidein th:nth-child(${i}){animation:colin .45s ease-out both;animation-delay:${(i-6)*85}ms}`;
+    }
+    css += `#pricetable.slidein td:nth-child(n+17),#pricetable.slidein th:nth-child(n+17){animation:colin .45s ease-out both;animation-delay:${11*85}ms}`;
+    style.textContent = css;
+    document.head.appendChild(style);
+    const t = document.getElementById("pricetable");
+    t.classList.add("slidein");
+    setTimeout(() => { t.classList.remove("slidein"); style.remove(); }, 2300);
   }
 
   // パターンB: ヘッダの各セルを左から順に跳ねさせる(2周)
@@ -584,10 +603,15 @@ function setupScrollHint(){
       if(wrap.scrollLeft > 5) return;  // すでに触っていたら演出しない
       if(HINT_PATTERN === "A"){
         hint.classList.add("play");      // 光のスイープ(CSSアニメ2回)
-        setTimeout(rubberPeek, 350);
+        setTimeout(() => rubberPeek(130), 350);
         setTimeout(() => hint.classList.remove("play"), 3300);
       }else if(HINT_PATTERN === "B"){
         headerWave();
+      }else if(HINT_PATTERN === "C1"){
+        columnSlideIn();
+      }else if(HINT_PATTERN === "C2"){
+        // 2段チラ見せ: 浅く→深く
+        rubberPeek(65, () => setTimeout(() => rubberPeek(180), 200));
       }
     }, 500);
   }, {threshold: 0.25});
