@@ -19,7 +19,7 @@
   }
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-top:60px}
 body{
   font-family:"SF Pro JP","SF Pro Display","SF Pro Text","SF Pro Icons",
     -apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic Pro",
@@ -43,7 +43,7 @@ nav.globalnav{
 @media (prefers-color-scheme: dark){ nav.globalnav{border-bottom:1px solid rgba(255,255,255,.12)} }
 nav.globalnav .inner{
   max-width:1024px;margin:0 auto;height:100%;
-  display:flex;align-items:center;gap:28px;padding:0 22px;
+  display:flex;align-items:center;justify-content:center;gap:28px;padding:0 22px;
   font-size:12px;letter-spacing:-.01em;overflow-x:auto;scrollbar-width:none;
 }
 nav.globalnav .inner::-webkit-scrollbar{display:none}
@@ -136,6 +136,24 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 .formbtns{display:flex;gap:10px;margin-top:14px}
 .whstatus{margin-top:10px;font-size:13px;min-height:1.4em}
 
+/* ---- モバイル調整 ---- */
+@media (max-width: 640px){
+  nav.globalnav .inner{gap:14px;padding:0 10px;font-size:11px}
+  header.hero{padding:44px 20px 40px}
+  section.block{padding:36px 18px}
+  main{padding:6px 12px 28px}
+  table{font-size:12px}
+  tbody td{padding:8px 7px}
+  thead th{padding:10px 7px 7px;font-size:10.5px}
+  td.max{font-size:12.5px}
+  tr.group td{font-size:13px;padding:9px 10px}
+  td.left.sticky{max-width:118px;overflow:hidden;text-overflow:ellipsis;font-size:11.5px}
+  .changes li{display:block;padding:11px 0}
+  .changes .t{display:block;min-width:0;font-size:11.5px;margin-bottom:3px}
+  .changes li>span:not(.t){margin-right:8px}
+  .formbtns .btn{flex:1;text-align:center}
+}
+
 footer{background:var(--bg2);margin-top:40px}
 footer .inner{max-width:1024px;margin:0 auto;padding:26px 22px;font-size:12px;color:var(--fg2)}
 footer .inner p{margin-bottom:8px}
@@ -146,7 +164,6 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 <body>
 
 <nav class="globalnav"><div class="inner">
-  <a class="logo" href="#top"></a>
   <a href="#table">価格比較</a>
   <a href="#changes">最近の変更</a>
   <a href="#notify">Discord通知</a>
@@ -155,7 +172,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 
 <header class="hero" id="top">
   <h1>iPhone 買取価格比較</h1>
-  <p class="sub">新品未開封。20社を、2時間ごとに。</p>
+  <p class="sub" id="subline">新品未開封の買取価格を、2時間ごとに。</p>
   <p class="meta" id="updated">読み込み中…</p>
   <div class="cta">
     <a class="btn" href="#table">価格を見る</a>
@@ -228,6 +245,8 @@ async function boot(){
   document.getElementById("updated").textContent =
     "更新日時: " + up.toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) +
     " (11〜19時の2時間おきに自動更新)";
+  document.getElementById("subline").textContent =
+    `新品未開封。${DB.shops.length}社を、2時間ごとに。`;
   buildPicker(); buildTable(); buildChanges(); buildFooter();
   document.getElementById("loading").style.display = "none";
   document.getElementById("tablewrap").style.display = "";
