@@ -488,7 +488,7 @@ async function boot(){
   // スマホは全機種表示だと長すぎるので、初期表示を先頭の機種(Pro Max)に絞る
   if(myDevices.length){
     filter = "mine";
-  }else if(matchMedia("(max-width: 640px)").matches && filter === "all" && DB.series.length){
+  }else if(filter === "all" && DB.series.length){
     filter = DB.series[0].id;
   }
   try{
@@ -532,7 +532,7 @@ function buildPicker(){
     return b;
   };
   const mine = mk("mine", `📱マイ端末${myDevices.length ? `(${myDevices.length})` : ""}`);
-  p.replaceChildren(mine, mk("all","すべて"), ...DB.series.map(s => mk(s.id, s.name)));
+  p.replaceChildren(mine, ...DB.series.map(s => mk(s.id, s.name)));
 }
 
 function keyRows(){
