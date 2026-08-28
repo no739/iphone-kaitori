@@ -2,7 +2,7 @@
   "_comment": "対象業者マスタ。順序がサイトの列順になります。enabled:false で一時停止。",
   "shops": [
     { "id": "shouten",  "name": "買取商店",        "url": "https://www.kaitorishouten-co.jp/keitai" },
-    { "id": "kaikyo",   "name": "海峡通信",        "url": "https://www.mobile-ichiban.com/" },
+    { "id": "kaikyo",   "name": "海峡通信",        "url": "https://www.mobile-ichiban.com/", "partial": true },
     { "id": "ichome",   "name": "買取一丁目",      "url": "https://www.1-chome.com/mobile" },
     { "id": "mix",      "name": "モバイルミックス", "url": "https://mobile-mix.jp/?category=7" },
     { "id": "somurie",  "name": "買取ソムリエ",    "url": "https://somurie-kaitori.com/products?category=1" },

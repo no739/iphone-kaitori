@@ -15,7 +15,7 @@ from .runner import collect
 from .shops import SkipShop
 
 JST = timezone(timedelta(hours=9))
-TARGETS = ["enoking", "mobasute"]
+TARGETS = ["enoking", "mobasute", "kaikyo"]  # CIから弾かれ/不安定な業者はMacから取得
 
 
 def main():
