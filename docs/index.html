@@ -150,7 +150,9 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 @media (max-width: 640px){
   nav.globalnav .inner{justify-content:space-between;gap:6px;padding:0 16px;font-size:11px}
   nav.globalnav a{flex:0 1 auto}
-  .tablewrap{max-height:74vh}
+  /* スマホは表の縦スクロールをページと一体化(iOSの引っかかり対策)。
+     ヘッダ固定はJSのフローティングヘッダ(#floathead)が担当 */
+  .tablewrap{max-height:none}
   header.hero{padding:44px 20px 40px}
   section.block{padding:36px 18px}
   main{padding:6px 12px 28px}
@@ -166,6 +168,15 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   .changes li>span:not(.t){margin-right:8px}
   .formbtns .btn{flex:1;text-align:center}
 }
+
+/* スマホ用フローティングヘッダ(業者名+取得時刻の行を画面上部に追従) */
+#floathead{
+  position:fixed;z-index:40;display:none;overflow:hidden;
+  background:var(--card);border-bottom:1px solid var(--line);
+  box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none;
+}
+#floathead table{border-collapse:separate;border-spacing:0;font-size:12px}
+#floathead th{position:static !important}
 
 footer{background:var(--bg2);margin-top:40px}
 footer .inner{max-width:1024px;margin:0 auto;padding:26px 22px;font-size:12px;color:var(--fg2)}
@@ -395,6 +406,7 @@ function buildTable(){
   }
   html += "</tbody>";
   t.innerHTML = html;
+  if(typeof fhRebuild === "function") fhRebuild();  // フィルタ切替時に浮動ヘッダも更新
 }
 
 function labelOf(key){
@@ -451,7 +463,52 @@ async function joinSend(){
   }catch(e){ whStatus("送信に失敗しました。通信環境を確認してもう一度どうぞ。", false); }
 }
 document.getElementById("wh-join").onclick = joinSend;
-boot();
+
+// ---- スマホ用フローティングヘッダ ----
+// 表を下にスクロールしてヘッダ行が画面外に出たら、複製を画面上部に固定表示し、
+// 横スクロールにも追従させる(iOSのネストスクロール問題を避けるための方式)
+let fhRebuild = null;
+function setupFloatHead(){
+  if(!matchMedia("(max-width: 640px)").matches) return;
+  const wrap = document.getElementById("tablewrap");
+  const table = document.getElementById("pricetable");
+  const holder = document.createElement("div");
+  holder.id = "floathead";
+  const inner = document.createElement("div");
+  holder.appendChild(inner);
+  document.body.appendChild(holder);
+
+  fhRebuild = () => {
+    if(!table.tHead) return;
+    const clone = table.cloneNode(false);
+    clone.appendChild(table.tHead.cloneNode(true));
+    clone.style.width = table.offsetWidth + "px";
+    const src = table.tHead.rows[0].cells, dst = clone.tHead.rows[0].cells;
+    for(let i = 0; i < src.length; i++){
+      dst[i].style.width = src[i].getBoundingClientRect().width + "px";
+      dst[i].style.boxSizing = "border-box";
+    }
+    inner.replaceChildren(clone);
+  };
+  const navH = 48;
+  const onScroll = () => {
+    const r = wrap.getBoundingClientRect();
+    const show = r.top < navH && r.bottom > navH + 120;
+    holder.style.display = show ? "block" : "none";
+    if(show){
+      holder.style.top = navH + "px";
+      holder.style.left = r.left + "px";
+      holder.style.width = r.width + "px";
+      inner.style.transform = `translateX(${-wrap.scrollLeft}px)`;
+    }
+  };
+  wrap.addEventListener("scroll", onScroll, {passive:true});
+  window.addEventListener("scroll", onScroll, {passive:true});
+  window.addEventListener("resize", () => { fhRebuild(); onScroll(); });
+  fhRebuild();
+  onScroll();
+}
+boot().then(() => setupFloatHead());
 </script>
 </body>
 </html>
