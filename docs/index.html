@@ -150,7 +150,9 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 @media (max-width: 640px){
   nav.globalnav .inner{justify-content:space-between;gap:6px;padding:0 16px;font-size:11px}
   nav.globalnav a{flex:0 1 auto}
-  .tablewrap{max-height:74vh}
+  /* スマホは表の縦スクロールをページと一体化(iOSで上下に引っかかる問題の根治)。
+     機種ごと表示になったので表が短く、ヘッダ固定なしでも実用上困らない */
+  .tablewrap{max-height:none}
   /* 機種ボタンは横スクロールさせず折り返して全部見せる */
   .picker{flex-wrap:wrap;overflow:visible;gap:7px}
   .picker button{padding:7px 14px;font-size:13px}
