@@ -523,7 +523,7 @@ document.getElementById("wh-join").onclick = joinSend;
 // ---- 横スクロールのヒント演出(パターン切り替え式) ----
 // A: 光のスイープ+ラバーバンドのチラ見せ
 // B: ヘッダウェーブ(業者名セルが左→右へ順に跳ねる)
-const HINT_PATTERN = "B";
+const HINT_PATTERN = "A";  // A=光スイープ+ラバーバンド(採用) / B=ヘッダウェーブ(不採用)
 
 function setupScrollHint(){
   const wrap = document.getElementById("tablewrap");
