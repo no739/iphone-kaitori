@@ -266,7 +266,9 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   box-shadow:0 3px 10px rgba(0,0,0,.16);border-radius:0;
 }
 #floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
-#floathead th{position:static !important;box-shadow:none}
+#floathead th{box-shadow:none}
+#floathead th.sticky{position:sticky !important;left:0;z-index:2;background:var(--card)}
+#floathead th:not(.sticky){position:static !important}
 
 /* 横スクロールを示すリッチな初回演出: 光のスイープ+ラバーバンドのチラ見せ */
 #tablezone{position:relative}
