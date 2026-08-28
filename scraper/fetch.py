@@ -36,7 +36,36 @@ def get(url, session=None, retries=3, wait=5, timeout=40, **kw):
     raise last
 
 
+_PW = {"browser": None, "ctx": None}
+
+
+def _playwright_html(url):
+    """403等でHTTP取得できないサイト向け: ヘッドレスChromiumで取得。"""
+    from playwright.sync_api import sync_playwright
+    if _PW["browser"] is None:
+        _PW["pw"] = sync_playwright().start()
+        _PW["browser"] = _PW["pw"].chromium.launch(headless=True)
+        _PW["ctx"] = _PW["browser"].new_context(
+            user_agent=UA, locale="ja-JP",
+            viewport={"width": 1280, "height": 900})
+    page = _PW["ctx"].new_page()
+    try:
+        page.goto(url, wait_until="domcontentloaded", timeout=45000)
+        page.wait_for_timeout(2500)  # Cloudflare等のJSチャレンジ待ち
+        return page.content()
+    finally:
+        page.close()
+
+
 def get_html(url, **kw):
-    r = get(url, **kw)
-    r.encoding = r.apparent_encoding or r.encoding
-    return r.text
+    try:
+        r = get(url, **kw)
+        r.encoding = r.apparent_encoding or r.encoding
+        return r.text
+    except Exception:
+        # ブロックされた場合は実ブラウザで再試行(playwright未導入ならそのまま失敗)
+        try:
+            import playwright  # noqa: F401
+        except ImportError:
+            raise
+        return _playwright_html(url)
