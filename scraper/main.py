@@ -169,12 +169,21 @@ def build_change_message(nz, shops_by_id, changes, now, prev_updated=None,
         down_shops = sorted({c["shop"] for c in cs if c["new"] < c["old"]})
         diffs = sorted({c["new"] - c["old"] for c in cs}, key=abs)
         rng = f"{diffs[0]:+,}" if len(diffs) == 1 else f"{diffs[0]:+,}〜{diffs[-1]:+,}"
+
+        def names(ids):
+            """業者名で表示(3社まで名前、それ以上は社数でまとめる)。"""
+            ns = [shops_by_id.get(i, {}).get("name", i) for i in ids]
+            if len(ns) > 3:
+                return "・".join(ns[:3]) + f" ほか{len(ns) - 3}社"
+            return "・".join(ns)
+
         if up_shops and down_shops:
-            arrow, desc = "↕", f"値上げ{len(up_shops)}社・値下げ{len(down_shops)}社 ({rng})"
+            arrow = "↕"
+            desc = f"{names(up_shops)}が値上げ / {names(down_shops)}が値下げ ({rng})"
         elif up_shops:
-            arrow, desc = "▲", f"{len(up_shops)}社が値上げ ({rng})"
+            arrow, desc = "▲", f"{names(up_shops)}が値上げ ({rng})"
         else:
-            arrow, desc = "▼", f"{len(down_shops)}社が値下げ ({rng})"
+            arrow, desc = "▼", f"{names(down_shops)}が値下げ ({rng})"
         line = f"{arrow} **{base_label(base)}** {desc}"
         m = cap_max(base)
         if m:
