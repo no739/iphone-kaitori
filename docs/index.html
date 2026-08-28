@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>iPhone 買取価格比較</title>
 <meta name="description" content="新品未開封iPhoneの買取価格を20社横断で比較。2時間ごとに自動更新。">
 <style>
@@ -19,7 +19,11 @@
   }
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:60px}
+html{
+  scroll-behavior:smooth;scroll-padding-top:60px;
+  -webkit-text-size-adjust:100%;   /* 回転時などの文字サイズ自動変更を止める */
+  touch-action:manipulation;        /* ダブルタップでの拡大を無効化 */
+}
 body{
   font-family:"SF Pro JP","SF Pro Display","SF Pro Text","SF Pro Icons",
     -apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic Pro",
@@ -226,6 +230,33 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 }
 thead th.wave{animation:thwave .55s cubic-bezier(.34,1.56,.64,1) both}
 
+/* ---- 遊び心: たまにカニが画面下を横断する ---- */
+#crab{
+  position:fixed;left:0;bottom:14px;z-index:60;pointer-events:none;
+  width:64px;will-change:transform;visibility:hidden;
+}
+#crab.walk{visibility:visible;animation:crabwalk var(--ct, 14s) linear forwards}
+@keyframes crabwalk{
+  0%{opacity:0;transform:translate3d(-90px,0,0)}
+  3%{opacity:1}
+  96%{opacity:1}
+  100%{opacity:0;transform:translate3d(calc(100vw + 90px),0,0)}
+}
+/* 体の上下の揺れ(カサカサ感) */
+#crab .body{animation:crabbob .32s ease-in-out infinite}
+@keyframes crabbob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-2.5px) rotate(1.5deg)}}
+/* ハサミの開閉 */
+#crab .claw-l{transform-origin:78px 118px;animation:clawl 1.15s ease-in-out infinite}
+#crab .claw-r{transform-origin:242px 118px;animation:clawr 1.15s ease-in-out infinite}
+@keyframes clawl{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-13deg)}}
+@keyframes clawr{0%,100%{transform:rotate(0deg)}50%{transform:rotate(13deg)}}
+/* 脚の交互運び */
+#crab .legs-a{animation:legA .32s ease-in-out infinite}
+#crab .legs-b{animation:legB .32s ease-in-out infinite}
+@keyframes legA{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes legB{0%,100%{transform:translateY(-3px)}50%{transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){ #crab{display:none} }
+
 footer{background:var(--bg2);margin-top:40px}
 footer .inner{max-width:1024px;margin:0 auto;padding:26px 22px;font-size:12px;color:var(--fg2)}
 footer .inner p{margin-bottom:8px}
@@ -235,6 +266,42 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 </head>
 <body>
 
+<div id="crab" aria-hidden="true">
+  <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
+    <g class="body" style="transform-origin:160px 170px">
+      <g fill="#e01b1b" stroke="#111" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+        <!-- 脚(太い帯状・左右4本ずつ) -->
+        <g class="legs-a" fill="#e01b1b">
+          <!-- 外側へ大きく張り出す脚(左右2本ずつ) -->
+          <path d="M86 170 C48 162 20 168 2 190 C22 200 34 216 38 236 C50 222 66 210 88 204Z"/>
+          <path d="M92 200 C56 210 28 234 16 268 C40 262 62 268 78 282 C82 252 92 226 106 212Z"/>
+          <path d="M234 170 C272 162 300 168 318 190 C298 200 286 216 282 236 C270 222 254 210 232 204Z"/>
+          <path d="M228 200 C264 210 292 234 304 268 C280 262 258 268 242 282 C238 252 228 226 214 212Z"/>
+        </g>
+        <g class="legs-b" fill="#e01b1b">
+          <path d="M108 220 C86 246 74 274 76 298 C96 288 114 286 132 292 C124 266 122 240 128 222Z"/>
+          <path d="M212 220 C234 246 246 274 244 298 C224 288 206 286 188 292 C196 266 198 240 192 222Z"/>
+          <path d="M152 232 C144 258 144 280 152 300 C164 296 176 296 188 300 C194 278 192 256 184 232Z"/>
+        </g>
+        <!-- ハサミ(大きく・上に構える) -->
+        <g class="claw-l">
+          <path d="M96 150 C56 128 32 92 40 56 C46 28 74 18 94 32 C112 44 112 68 100 84 C118 74 138 84 138 104 C138 128 116 144 96 150Z"/>
+          <path d="M60 62 C74 82 90 98 108 108" fill="none" stroke-width="10"/>
+        </g>
+        <g class="claw-r">
+          <path d="M224 150 C264 128 288 92 280 56 C274 28 246 18 226 32 C208 44 208 68 220 84 C202 74 182 84 182 104 C182 128 204 144 224 150Z"/>
+          <path d="M260 62 C246 82 230 98 212 108" fill="none" stroke-width="10"/>
+        </g>
+        <!-- 甲羅 -->
+        <ellipse cx="160" cy="182" rx="92" ry="66"/>
+        <!-- 目の柄 -->
+        <path d="M134 128 L134 112" stroke-width="10"/><path d="M186 128 L186 112" stroke-width="10"/>
+      </g>
+      <circle cx="132" cy="100" r="13" fill="#3a1414" stroke="#111" stroke-width="7"/>
+      <circle cx="188" cy="100" r="13" fill="#3a1414" stroke="#111" stroke-width="7"/>
+    </g>
+  </svg>
+</div>
 <button id="menubtn" aria-label="メニュー"><span></span><span></span><span></span></button>
 <div id="menuscrim"></div>
 <div id="menupanel">
@@ -586,6 +653,33 @@ async function joinSend(){
   }catch(e){ whStatus("送信に失敗しました。通信環境を確認してもう一度どうぞ。", false); }
 }
 document.getElementById("wh-join").onclick = joinSend;
+
+// ---- 遊び心: たまにカニが画面下をカサカサ横断する ----
+(() => {
+  const crab = document.getElementById("crab");
+  function walk(){
+    crab.classList.remove("walk");
+    void crab.offsetWidth;                       // アニメをリセット
+    const dur = 12 + Math.random() * 8;          // 12〜20秒かけてゆっくり横断
+    crab.style.setProperty("--ct", dur + "s");
+    crab.style.bottom = (10 + Math.random() * 26) + "px";
+    crab.style.width = (52 + Math.random() * 22) + "px";
+    // たまに右から左へ(カニらしく横歩き)
+    crab.style.transform = "";
+    crab.style.scale = Math.random() < .35 ? "-1 1" : "1 1";
+    crab.classList.add("walk");
+    setTimeout(schedule, dur * 1000 + 500);
+  }
+  function schedule(){
+    // 次に現れるまで 60〜180秒(たまに出るくらいの頻度)
+    setTimeout(() => {
+      if(document.hidden) return schedule();     // 非表示タブでは歩かせない
+      walk();
+    }, 60000 + Math.random() * 120000);
+  }
+  setTimeout(walk, 8000);                        // 初回は8秒後
+  window.__crab = walk;                          // 動作確認用
+})();
 
 // ---- ハンバーガーメニュー(下スクロールで隠れ、上スクロールで現れる) ----
 (() => {
