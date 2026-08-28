@@ -128,8 +128,16 @@ thead th.shop a{color:var(--accent);font-weight:600}
 thead th.shop a:hover{text-decoration:underline}
 thead th.stale a{color:var(--down)}
 thead th .ut{display:block;font-size:9.5px;font-weight:400;color:var(--fg2);margin-top:1px}
-thead th .fav{display:inline-block;margin-right:3px;cursor:pointer;color:var(--fg2);font-size:12px;vertical-align:1px}
+thead th .fav{
+  position:relative;display:inline-block;margin-right:7px;cursor:pointer;
+  color:var(--fg2);font-size:15px;vertical-align:0;line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+/* 見た目は変えずタップ範囲だけ広げる(指で押しやすく、リンク誤タップを防ぐ) */
+thead th .fav::after{content:"";position:absolute;left:-9px;right:-7px;top:-11px;bottom:-11px}
+thead th .fav:active{transform:scale(1.25)}
 thead th .fav.on{color:#f5a623}
+thead th.shop a{display:inline-block;padding:2px 0}
 thead th.isfav{background:color-mix(in srgb, var(--accent) 9%, var(--card))}
 #favbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1400px;margin:14px auto 0;padding:0 22px}
 .favhint{font-size:12.5px;color:var(--fg2)}
