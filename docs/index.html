@@ -711,7 +711,7 @@ document.getElementById("wh-join").onclick = joinSend;
     const dur = 3.4 + Math.random() * 1.4;       // 3.4〜4.8秒でシュッと素早く横断
     crab.style.setProperty("--ct", dur + "s");
     crab.style.top = (68 + Math.random() * 4) + "vh";  // 画面の7割ほどの高さ
-    crab.style.width = "62px";                    // 1匹・最初のサイズ
+    crab.style.width = "48px";                    // 1匹・控えめなサイズ
     crab.style.transform = "";
     crab.classList.add("walk");
     setTimeout(schedule, dur * 1000 + 500);
