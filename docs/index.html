@@ -81,7 +81,11 @@ header.hero .cta{margin-top:20px;display:flex;gap:16px;justify-content:center;fl
 
 /* ---- table ---- */
 main{max-width:1400px;margin:0 auto;padding:10px 22px 40px}
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card)}
+.tablewrap{
+  overflow:auto;max-height:82vh;  /* 縦横スクロールを表の中に閉じ込め、ヘッダ行を固定(スプレッドシートの固定と同じ挙動) */
+  border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card);
+  overscroll-behavior:contain;
+}
 table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;letter-spacing:-.01em}
 thead th{
   position:sticky;top:0;background:var(--card);z-index:3;
@@ -143,6 +147,7 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 @media (max-width: 640px){
   nav.globalnav .inner{justify-content:space-between;gap:6px;padding:0 16px;font-size:11px}
   nav.globalnav a{flex:0 1 auto}
+  .tablewrap{max-height:74vh}
   header.hero{padding:44px 20px 40px}
   section.block{padding:36px 18px}
   main{padding:6px 12px 28px}
