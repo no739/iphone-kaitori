@@ -103,7 +103,7 @@ tr.group td{
 td.max{background:var(--hl);box-shadow:inset 0 0 0 1.5px var(--hl-border);border-radius:6px;font-weight:700;color:var(--hl-fg);font-size:13.5px}
 td.max .d{font-weight:600}
 td .d{display:block;font-size:10.5px;font-weight:500;line-height:1.2}
-.d.up{color:var(--up)} .d.down{color:var(--down)}
+.d.up{color:var(--up)} .d.down{color:var(--down)} .d.dim0{color:var(--fg2)}
 td.dim{color:var(--fg2)}
 td.na{color:var(--line)}
 th.stale{color:var(--down)}
@@ -204,7 +204,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 
 <section class="block" id="about">
   <h2>このサイトについて</h2>
-  <p>11時〜19時の2時間おき(1日5回)に各買取業者の公式サイトから新品未開封iPhoneの買取価格を自動取得しています。緑のセルはその行の最高値。価格の下の▲▼は前回巡回からの変動です。</p>
+  <p>11時〜19時の2時間おき(1日5回)に各買取業者の公式サイトから新品未開封iPhoneの買取価格を自動取得しています。緑のセルはその行の最高値。各社セルの▲▼は前回巡回からの変動、最高値の下の「前日▲▼」は前日(毎朝11時に記録)の最高値との比較です。</p>
   <p>新しいiPhoneが発売されたら <code>config/models.json</code> に1機種追記するだけで自動的に追跡対象になります。</p>
 </section>
 
@@ -274,6 +274,15 @@ function cell(shopId, key){
   return {p, d:(prev!=null && prev!==p) ? p-prev : null};
 }
 
+function yesterdayMax(key){
+  let m = null;
+  for(const sid in (DB.yesterday||{})){
+    const v = DB.yesterday[sid][key];
+    if(v != null && (m == null || v > m)) m = v;
+  }
+  return m;
+}
+
 function buildTable(){
   const shops = DB.shops;
   const t = document.getElementById("pricetable");
@@ -296,7 +305,14 @@ function buildTable(){
       const dotCls = row.color ? `<span class="dot ${row.color}"></span>` : "";
       html += `<td class="left sticky colorname">${dotCls}${row.colorName}</td>`;
       html += `<td class="dim">${fmt(g.listPrice)}</td>`;
-      html += `<td class="max">${max?fmt(max):"—"}</td>`;
+      let ycmp = "";
+      const ymax = yesterdayMax(row.key);
+      if(max && ymax != null){
+        const yd = max - ymax;
+        ycmp = yd === 0 ? `<span class="d dim0">前日±0</span>`
+          : `<span class="d ${yd>0?'up':'down'}">前日${yd>0?"▲":"▼"}${fmt(Math.abs(yd))}</span>`;
+      }
+      html += `<td class="max">${max?fmt(max):"—"}${ycmp}</td>`;
       html += diff==null ? '<td class="na">—</td>' :
         `<td class="${diff>=0?'':'dim'}">${diff>0?"+":""}${fmt(diff)}</td>`;
       html += rate==null ? '<td class="na">—</td>' :

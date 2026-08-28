@@ -277,6 +277,9 @@ def main():
     daily_files = sorted(os.listdir(daily_dir))[-30:] if os.path.isdir(daily_dir) else []
     y_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     y_snap = load_json(os.path.join(daily_dir, f"{y_str}.json"), {})
+    if not y_snap.get("prices"):
+        # 前日データがまだ無い間(運用初日)は当日朝のスナップショットで代用
+        y_snap = load_json(os.path.join(daily_dir, f"{today_str}.json"), {})
 
     save_json(latest_path, {
         "updated": ts,
