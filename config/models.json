@@ -16,13 +16,13 @@
     {
       "id": "17air",
       "name": "iPhone 17 Air",
-      "colors": {},
+      "colors": { "skyblue": "スカイブルー", "gold": "ライトゴールド", "white": "クラウドホワイト", "black": "スペースブラック" },
       "capacities": { "256": 159800, "512": 194800, "1024": 229800 }
     },
     {
       "id": "17",
       "name": "iPhone 17",
-      "colors": {},
+      "colors": { "lavender": "ラベンダー", "mistblue": "ミストブルー", "sage": "セージ", "white": "ホワイト", "black": "ブラック" },
       "capacities": { "256": 129800, "512": 164800 }
     }
   ]

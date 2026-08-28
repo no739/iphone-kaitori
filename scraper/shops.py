@@ -27,29 +27,33 @@ def shop(shop_id):
     return deco
 
 
-_COLOR_TOKEN = {"橙": "オレンジ", "オレンジ": "オレンジ", "青": "ブルー", "ブルー": "ブルー",
-                "銀": "シルバー", "シルバー": "シルバー",
-                "orange": "オレンジ", "blue": "ブルー", "silver": "シルバー",
-                "Orange": "オレンジ", "Blue": "ブルー", "Silver": "シルバー"}
+from .normalize import COLOR_WORDS  # noqa: E402
+
+_ALL_COLOR_WORDS = sorted({w for ws in COLOR_WORDS.values() for w in ws},
+                          key=len, reverse=True)
+_ALT = "|".join(re.escape(w) for w in _ALL_COLOR_WORDS)
 _DEDUCT_RE = re.compile(
-    r"(橙|青|銀|オレンジ|ブルー|シルバー|[Oo]range|[Bb]lue|[Ss]ilver)\s*[-−▲]\s*([0-9,]+)")
-_ABS_RE = re.compile(r"(橙|青|銀|オレンジ|ブルー|シルバー)\s+([0-9]{2,3},[0-9]{3})")
+    rf"((?:{_ALT})(?:\s*[/・]\s*(?:{_ALT}))*)\s*[-−▲]\s*([0-9,]+)", re.I)
+_WORD_RE = re.compile(_ALT, re.I)
+_ABS_RE = re.compile(rf"({_ALT})\s+([0-9]{{2,3}},[0-9]{{3}})", re.I)
 
 
 def expand_color_deductions(text, base_price):
-    """カラー別の価格差表記を per-color の offer に展開する。
-    「橙-6500」(減額) と「橙 178,000」(そのカラーの絶対額) の両方に対応。
-    表記がなければ元の1件を返す。"""
-    overrides = {}
+    """カラー別の価格差表記(「橙-6500」=減額 /「橙 178,000」=絶対額)を検出し、
+    offer に ov(カラー語→そのカラーの価格)として付与する。
+    どのカラーに対応するかの解決は runner 側(機種のカラー定義に基づく)。"""
+    ov = {}
     for m in _DEDUCT_RE.finditer(text):
-        overrides[_COLOR_TOKEN[m.group(1)]] = base_price - int(m.group(2).replace(",", ""))
+        # 「ブルー/ブラック -2,000」のような複数色まとめ表記にも対応
+        for word in _WORD_RE.findall(m.group(1)):
+            ov[word] = base_price - int(m.group(2).replace(",", ""))
     for m in _ABS_RE.finditer(text):
-        overrides[_COLOR_TOKEN[m.group(1)]] = int(m.group(2).replace(",", ""))
-    if not overrides:
-        return [{"text": text, "price": base_price}]
-    clean = _ABS_RE.sub("", _DEDUCT_RE.sub("", text))
-    return [{"text": f"{clean} {jp}", "price": overrides.get(jp, base_price)}
-            for jp in ("オレンジ", "ブルー", "シルバー")]
+        ov[m.group(1)] = int(m.group(2).replace(",", ""))
+    clean = _ABS_RE.sub("", _DEDUCT_RE.sub("", text)).strip()
+    offer = {"text": clean, "price": base_price}
+    if ov:
+        offer["ov"] = ov
+    return [offer]
 
 
 def _soup(html):

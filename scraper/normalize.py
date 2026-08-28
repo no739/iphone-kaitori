@@ -11,9 +11,16 @@ import unicodedata
 _CONFIG = os.path.join(os.path.dirname(__file__), "..", "config", "models.json")
 
 COLOR_WORDS = {
-    "orange": ["コズミックオレンジ", "オレンジ", "orange", "橙"],
-    "blue": ["ディープブルー", "ブルー", "blue", "青"],
-    "silver": ["シルバー", "silver", "銀"],
+    "orange":   ["コズミックオレンジ", "オレンジ", "orange", "橙"],
+    "blue":     ["ディープブルー", "ブルー", "blue", "青"],
+    "silver":   ["シルバー", "silver", "銀"],
+    "black":    ["スペースブラック", "ブラック", "black", "黒"],
+    "white":    ["クラウドホワイト", "ホワイト", "white", "白"],
+    "gold":     ["ライトゴールド", "ゴールド", "gold", "金"],
+    "skyblue":  ["スカイブルー", "skyblue", "ブルー", "blue", "青"],
+    "mistblue": ["ミストブルー", "mistblue", "ブルー", "blue", "青"],
+    "sage":     ["セージ", "sage", "グリーン", "green", "緑"],
+    "lavender": ["ラベンダー", "lavender", "パープル", "purple", "紫"],
 }
 
 
@@ -75,11 +82,26 @@ class Normalizer:
             return None
         color = None
         if self.colored[sid]:
-            for c, words in COLOR_WORDS.items():
-                if any(_clean(w) in s for w in words):
-                    color = c
-                    break
+            # その機種に存在するカラーだけを対象に、最長一致で判定
+            # (「ミストブルー」が「ブルー」に食われない・機種違いの色を拾わない)
+            cands = []
+            for c in self.colors[sid]:
+                for w in COLOR_WORDS.get(c, []):
+                    cw = _clean(w)
+                    if cw and cw in s:
+                        cands.append((len(cw), c))
+            if cands:
+                color = max(cands)[1]
         return sid, cap, color
+
+    def word_is_color(self, sid, color_id, word):
+        """色減額トークン(例「橙」「Blue」)が sid のカラー color_id を指すか。"""
+        w = _clean(word)
+        for x in COLOR_WORDS.get(color_id, []):
+            cx = _clean(x)
+            if cx == w or cx in w or w in cx:
+                return True
+        return False
 
     def keys_for(self, sid, cap, color):
         """この商品が該当する item key のリスト。

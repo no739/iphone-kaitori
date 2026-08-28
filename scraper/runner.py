@@ -24,9 +24,21 @@ def collect(shop_id):
         if not parsed:
             continue
         sid, cap, color = parsed
-        for key in nz.keys_for(sid, cap, color):
-            if price > best.get(key, 0):
-                best[key] = price
+        ov = of.get("ov") or {}
+        if color is None and nz.colored[sid] and ov:
+            # カラー不明の1件+色減額表記 → 機種のカラーごとに価格を割り当て
+            for c in nz.colors[sid]:
+                p2 = price
+                for word, pv in ov.items():
+                    if nz.word_is_color(sid, c, word):
+                        p2 = pv
+                key = f"{sid}-{cap}-{c}"
+                if p2 > best.get(key, 0):
+                    best[key] = p2
+        else:
+            for key in nz.keys_for(sid, cap, color):
+                if price > best.get(key, 0):
+                    best[key] = price
         kept.append((text[:70], price))
     return best, kept
 
