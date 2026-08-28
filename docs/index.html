@@ -265,11 +265,8 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
   box-shadow:0 3px 10px rgba(0,0,0,.3);border-radius:0;
   isolation:isolate;   /* 下の表が透けて見えないよう独立した重なり層にする */
 }
-/* ヘッダより上(画面最上部・ノッチ周辺)に表の中身が覗くのを塞ぐ下地 */
-#floathead::before{
-  content:"";position:absolute;left:0;right:0;bottom:100%;height:100vh;
-  background:var(--bg);
-}
+/* ヘッダ帯を上方向に伸ばして、画面最上部まで表と同じ色で塞ぐ */
+#floathead{padding-top:120px;margin-top:-120px}
 #floathead table{background:var(--card)}
 #floathead th{background:var(--card) !important}
 #floathead table{border-collapse:separate;border-spacing:0;font-size:13px;letter-spacing:-.01em}
