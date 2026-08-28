@@ -213,7 +213,7 @@ section.block p{color:var(--fg2);font-size:15px;margin-bottom:10px}
 
 /* ---- モバイル調整 ---- */
 @media (max-width: 640px){
-  #topmask{height:62px !important}
+  #topmask{height:env(safe-area-inset-top, 0px) !important}
   #menubtn{top:10px;left:10px;width:42px;height:42px}
   #menupanel{padding-top:74px}
   /* ヒーローはApple風に余白多め・文字は控えめに */
@@ -817,23 +817,32 @@ let fhRebuild = null;
     holder.scrollLeft = wrap.scrollLeft;
   };
 
+  const mask = document.getElementById("topmask");
+  let last = {show:null, top:-1, left:-1, width:-1};
   const sync = () => {
     const r = wrap.getBoundingClientRect();
-    const headH = table.tHead ? table.tHead.getBoundingClientRect().height : 0;
-    const maskH = document.getElementById("topmask").getBoundingClientRect().height;
+    const headH = table.tHead ? table.tHead.offsetHeight : 0;
+    const maskH = mask.offsetHeight;
     // 表の実ヘッダが画面上部(目隠し帯の下)から隠れたら追従ヘッダを出す
     const show = r.top < maskH && r.bottom > headH + 120;
-    holder.style.display = show ? "block" : "none";
-    if(show){
-      holder.style.top = maskH + "px";
-      holder.style.left = r.left + "px";
-      holder.style.width = r.width + "px";
-      holder.scrollLeft = wrap.scrollLeft;
-    }
+    if(show !== last.show){ holder.style.display = show ? "block" : "none"; last.show = show; }
+    if(!show) return;
+    if(maskH !== last.top){ holder.style.top = maskH + "px"; last.top = maskH; }
+    const L = Math.round(r.left), W = Math.round(r.width);
+    if(L !== last.left){ holder.style.left = L + "px"; last.left = L; }
+    if(W !== last.width){ holder.style.width = W + "px"; last.width = W; }
+    if(holder.scrollLeft !== wrap.scrollLeft) holder.scrollLeft = wrap.scrollLeft;
   };
-  wrap.addEventListener("scroll", sync, {passive:true});
-  addEventListener("scroll", sync, {passive:true});
-  addEventListener("resize", () => { fhRebuild(); sync(); });
+  // スクロールごとではなく描画フレームごとに1回だけ計算する(カクつき防止)
+  let raf = 0;
+  const onScroll = () => { if(!raf) raf = requestAnimationFrame(() => { raf = 0; sync(); }); };
+  // 横は1フレームの遅れも見えるので即時同期(計算が軽いためカクつかない)
+  wrap.addEventListener("scroll", () => {
+    if(holder.scrollLeft !== wrap.scrollLeft) holder.scrollLeft = wrap.scrollLeft;
+    onScroll();
+  }, {passive:true});
+  addEventListener("scroll", onScroll, {passive:true});
+  addEventListener("resize", () => { fhRebuild(); last = {show:null, top:-1, left:-1, width:-1}; sync(); });
   setTimeout(() => { fhRebuild(); sync(); }, 800);
 })();
 
