@@ -121,6 +121,11 @@ main .picker{margin-left:0;margin-right:0}   /* 広いページ内で中央に�
   width:max-content;   /* 枠は表のサイズに合わせる。スクロールはページ側で行う */
   border:1px solid var(--line);border-radius:18px;margin-top:18px;background:var(--card);
 }
+/* 枠の角丸に合わせて四隅のセルも丸める(セル背景が角からはみ出さないように) */
+#pricetable thead th:first-child{border-top-left-radius:18px}
+#pricetable thead th:last-child{border-top-right-radius:18px}
+#pricetable tbody tr:last-child td:first-child{border-bottom-left-radius:18px}
+#pricetable tbody tr:last-child td:last-child{border-bottom-right-radius:18px}
 table{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%;letter-spacing:-.01em}
 thead th{
   position:sticky;top:0;background:var(--card);z-index:3;
