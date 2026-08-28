@@ -134,9 +134,13 @@ thead th .fav{
   -webkit-tap-highlight-color:transparent;
 }
 /* 見た目は変えずタップ範囲だけ広げる(指で押しやすく、リンク誤タップを防ぐ) */
-thead th .fav{opacity:.45}
+thead th .fav{opacity:.5}
 thead th .fav.on{opacity:1}
-thead th.shop{cursor:pointer;-webkit-touch-callout:none;user-select:none}
+thead th .fav::after{content:"";position:absolute;left:-10px;right:-8px;top:-12px;bottom:-12px}
+thead th .fav:active{transform:scale(1.3)}
+/* 外した業者が移動する前に1秒ハイライトして分かるようにする */
+thead th.favout{animation:favout 1s ease-out}
+@keyframes favout{0%,60%{background:color-mix(in srgb,var(--down) 30%,transparent)}100%{background:transparent}}
 thead th.favflash{animation:favflash .5s ease-out}
 @keyframes favflash{0%{background:color-mix(in srgb,#f5a623 45%,transparent)}100%{background:transparent}}
 thead th .fav.on{color:#f5a623}
@@ -519,10 +523,25 @@ const isFav = id => favs.includes(id);
 function saveFavs(){
   try{ localStorage.setItem("favshops", JSON.stringify(favs)); }catch(e){}
 }
-function toggleFav(id){
-  isFav(id) ? favs = favs.filter(x => x !== id) : favs.push(id);
-  saveFavs(); buildTable(); buildFavBar();
-  if(typeof buildChanges === "function") buildChanges();  // 変更一覧の件数も更新
+function toggleFav(id, el){
+  const removing = isFav(id);
+  favs = removing ? favs.filter(x => x !== id) : [...favs, id];
+  saveFavs();
+  const refresh = () => {
+    buildTable(); buildFavBar();
+    if(typeof buildChanges === "function") buildChanges();
+  };
+  if(removing && el){
+    // どの業者を外したか分かるよう、その場で☆に変えて1秒見せてから並べ替える
+    el.textContent = "☆";
+    el.classList.remove("on");
+    const th = el.closest("th");
+    if(th){ th.classList.remove("isfav"); th.classList.add("favout"); }
+    if(navigator.vibrate) navigator.vibrate(10);
+    setTimeout(refresh, 1000);
+  }else{
+    refresh();
+  }
 }
 function orderedShops(){
   let list = DB.shops;
@@ -563,7 +582,7 @@ function buildTable(){
   for(const s of shops){
     const stale = !s.ok;
     const star = FAV_MODE === "OFF" ? "" :
-      `<span class="fav${isFav(s.id)?" on":""}">${isFav(s.id)?"★":"☆"}</span>`;
+      `<span class="fav${isFav(s.id)?" on":""}" data-fav="${s.id}" role="button" aria-label="お気に入り">${isFav(s.id)?"★":"☆"}</span>`;
     // その業者の価格を最後に実際に取得した時刻をヘッダ下に表示
     let ut = "";
     const iso = (DB.shop_updated||{})[s.id];
@@ -617,27 +636,12 @@ function buildTable(){
   }
   html += "</tbody>";
   t.innerHTML = html;
-  // 業者名ヘッダを長押しでお気に入り登録/解除(タップは通常どおりサイトへのリンク)
-  t.querySelectorAll("th.shop[data-shop]").forEach(th => {
-    let timer = null, fired = false;
-    const start = () => {
-      fired = false;
-      timer = setTimeout(() => {
-        fired = true;
-        th.classList.add("favflash");
-        if(navigator.vibrate) navigator.vibrate(15);
-        toggleFav(th.dataset.shop);
-      }, 450);
-    };
-    const cancel = () => { clearTimeout(timer); };
-    th.addEventListener("touchstart", start, {passive:true});
-    th.addEventListener("touchend", (e) => { cancel(); if(fired) e.preventDefault(); });
-    th.addEventListener("touchmove", cancel, {passive:true});
-    th.addEventListener("mousedown", start);
-    th.addEventListener("mouseup", cancel);
-    th.addEventListener("mouseleave", cancel);
-    th.addEventListener("contextmenu", (e) => e.preventDefault());
-    th.querySelector("a").addEventListener("click", (e) => { if(fired){ e.preventDefault(); } });
+  // ☆タップでお気に入りの登録/解除(業者名タップは通常どおりサイトへ)
+  t.querySelectorAll("[data-fav]").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      toggleFav(el.dataset.fav, el);
+    });
   });
 }
 
