@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-29T16:51:08+09:00",
+ "updated": "2026-08-29T17:10:02+09:00",
  "series": [
   {
    "id": "17promax",
@@ -178,8 +178,8 @@
    "id": "space",
    "name": "携帯空間",
    "url": "https://www.keitaispace.co.jp/",
-   "ok": false,
-   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.keitaispace.co.jp/product/?se=24\", waiting until \"domcontentloaded\"\n"
+   "ok": true,
+   "error": null
   },
   {
    "id": "guest",
@@ -206,8 +206,8 @@
    "id": "god",
    "name": "ケータイゴッド",
    "url": "https://keitai-god.com/price/index.php",
-   "ok": false,
-   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://keitai-god.com/price/index.php?ci=11&mi=451\", waiting until \"domcontentloaded\"\n"
+   "ok": true,
+   "error": null
   }
  ],
  "prices": {
@@ -1328,15 +1328,15 @@
    "17promax-2048-silver": 292000,
    "17promax-2048-orange": 292000,
    "17promax-2048-blue": 292000,
-   "17pro-256-silver": 182000,
-   "17pro-256-orange": 175000,
-   "17pro-256-blue": 182000,
-   "17pro-512-silver": 211000,
-   "17pro-512-orange": 211000,
-   "17pro-512-blue": 211000,
-   "17pro-1024-silver": 233000,
-   "17pro-1024-orange": 233000,
-   "17pro-1024-blue": 233000,
+   "17pro-256-silver": 183000,
+   "17pro-256-orange": 176500,
+   "17pro-256-blue": 183000,
+   "17pro-512-silver": 212500,
+   "17pro-512-orange": 212500,
+   "17pro-512-blue": 212500,
+   "17pro-1024-silver": 235000,
+   "17pro-1024-orange": 235000,
+   "17pro-1024-blue": 235000,
    "17-256-black": 139000,
    "17-256-white": 139000,
    "17-256-mistblue": 139000,
@@ -2035,27 +2035,27 @@
   }
  },
  "shop_updated": {
-  "shouten": "2026-08-29T16:51:08+09:00",
+  "shouten": "2026-08-29T17:10:02+09:00",
   "kaikyo": "2026-08-29T16:50:05+09:00",
-  "ichome": "2026-08-29T16:51:08+09:00",
-  "mix": "2026-08-29T16:51:08+09:00",
-  "somurie": "2026-08-29T16:51:08+09:00",
+  "ichome": "2026-08-29T17:10:02+09:00",
+  "mix": "2026-08-29T17:10:02+09:00",
+  "somurie": "2026-08-29T17:10:02+09:00",
   "enoking": "2026-08-29T16:50:05+09:00",
-  "morimori": "2026-08-29T16:51:08+09:00",
-  "rudeya": "2026-08-29T16:51:08+09:00",
-  "wiki": "2026-08-29T16:51:08+09:00",
-  "homura": "2026-08-29T16:51:08+09:00",
-  "dragon": "2026-08-29T16:51:08+09:00",
+  "morimori": "2026-08-29T17:10:02+09:00",
+  "rudeya": "2026-08-29T17:10:02+09:00",
+  "wiki": "2026-08-29T17:10:02+09:00",
+  "homura": "2026-08-29T17:10:02+09:00",
+  "dragon": "2026-08-29T17:10:02+09:00",
   "mobasute": "2026-08-29T16:50:05+09:00",
-  "akimoba": "2026-08-29T16:51:08+09:00",
-  "twinkle": "2026-08-29T16:51:08+09:00",
-  "kaden": "2026-08-29T16:51:08+09:00",
-  "rakuen": "2026-08-29T16:51:08+09:00",
-  "space": "2026-08-29T15:10:37+09:00",
-  "guest": "2026-08-29T16:51:08+09:00",
-  "best1": "2026-08-29T16:51:08+09:00",
-  "star": "2026-08-29T16:51:08+09:00",
-  "god": "2026-08-29T15:10:37+09:00"
+  "akimoba": "2026-08-29T17:10:02+09:00",
+  "twinkle": "2026-08-29T17:10:02+09:00",
+  "kaden": "2026-08-29T17:10:02+09:00",
+  "rakuen": "2026-08-29T17:10:02+09:00",
+  "space": "2026-08-29T17:10:02+09:00",
+  "guest": "2026-08-29T17:10:02+09:00",
+  "best1": "2026-08-29T17:10:02+09:00",
+  "star": "2026-08-29T17:10:02+09:00",
+  "god": "2026-08-29T17:10:02+09:00"
  },
  "yesterday": {
   "shouten": {
