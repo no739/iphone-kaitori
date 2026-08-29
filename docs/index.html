@@ -203,6 +203,7 @@ td.max{background:var(--hl);box-shadow:inset 0 0 0 1.5px var(--hl-border);border
 td.max .d{font-weight:600}
 td .d{display:block;font-size:10.5px;font-weight:500;line-height:1.2}
 .d.up{color:var(--up)} .d.down{color:var(--down)} .d.dim0{color:var(--fg2)}
+.d.flat{color:var(--fg2);opacity:.6}
 .d .dt{color:var(--fg2);font-weight:400;font-size:9.5px}
 td.dim{color:var(--fg2)}
 td.na{color:var(--line)}
@@ -480,6 +481,7 @@ const fmt = n => n == null ? "—" : n.toLocaleString("ja-JP");
 let DB = null, filter = "all";
 
 let LAST_CHANGE = {};  // "shop|key" -> {d, ts} 直近24時間の最後の変動
+let LAST_MOVE = {};    // "shop|key" -> ts  期間を問わない最後の変動(据え置き表示の起点)
 async function boot(){
   const [res, resCh] = await Promise.all([
     fetch("data/latest.json?" + Date.now()),
@@ -499,6 +501,7 @@ async function boot(){
   const dayAgo = Date.now() - 24*60*60*1000;
   for(const c of DB.changeList){
     const k = c.shop + "|" + c.key;
+    if(!(k in LAST_MOVE)) LAST_MOVE[k] = c.ts;
     if(!(k in LAST_CHANGE) && new Date(c.ts).getTime() > dayAgo){
       LAST_CHANGE[k] = { d: c.new - c.old, ts: c.ts };
     }
@@ -565,12 +568,14 @@ function keyRows(){
 
 function cell(shopId, key){
   const p = (DB.prices[shopId]||{})[key];
-  if(p == null) return {p:null, d:null, dts:null};
+  if(p == null) return {p:null, d:null, dts:null, since:null};
   // 直近24時間内の「最後の変動」を差分表示(巡回をまたいでも残る)
   const lc = LAST_CHANGE[shopId + "|" + key];
-  if(lc) return {p, d: lc.d, dts: lc.ts};
+  if(lc) return {p, d: lc.d, dts: lc.ts, since:null};
   const prev = (DB.prev[shopId]||{})[key];
-  return {p, d:(prev!=null && prev!==p) ? p-prev : null, dts:null};
+  if(prev != null && prev !== p) return {p, d: p - prev, dts:null, since:null};
+  // 変動なし: いつから同じ値なのか(最後に動いた時刻)を出す
+  return {p, d:null, dts:null, since: LAST_MOVE[shopId + "|" + key] || null};
 }
 
 function yesterdayMax(key){
@@ -748,6 +753,17 @@ function buildTable(){
         if(c.d != null){
           const t = c.dts ? new Date(c.dts).toLocaleString("ja-JP",{hour:"2-digit",minute:"2-digit"}) : "";
           d = `<span class="d ${c.d>0?'up':'down'}">${c.d>0?"▲":"▼"}${fmt(Math.abs(c.d))}${t?`<span class="dt"> ${t}</span>`:""}</span>`;
+        }else{
+          // 変動なし: いつから据え置きか(履歴に無ければ記録開始前=それ以前ずっと)
+          let t = "記録開始前〜";
+          if(c.since){
+            const sd = new Date(c.since);
+            const sameDay = sd.toDateString() === new Date(DB.updated).toDateString();
+            t = sd.toLocaleString("ja-JP", sameDay
+              ? {hour:"2-digit",minute:"2-digit"}
+              : {month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}) + "〜";
+          }
+          d = `<span class="d flat">±0<span class="dt"> ${t}</span></span>`;
         }
         html += `<td${isMax?' class="max"':''}>${fmt(c.p)}${d}</td>`;
       }
