@@ -216,54 +216,83 @@ def build_change_message(nz, shops_by_id, changes, now, prev_updated=None,
     return "\n".join(lines)
 
 
-def best_by_capacity(nz, prices, shop_filter=None):
-    """{series-cap: (最高値, shop_id)} カラーは最高値に集約。shop_filterで業者を限定可。"""
+def best_by_key(prices, shop_filter=None):
+    """{item_key: (最高値, [shop_id...])} カラー(item_key)単位。同額は全社返す。"""
     out = {}
     for sid, cur in prices.items():
         if shop_filter and sid not in shop_filter:
             continue
         for key, p in cur.items():
-            base = "-".join(key.split("-")[:2])
-            if base not in out or p > out[base][0]:
-                out[base] = (p, sid)
+            if key not in out or p > out[key][0]:
+                out[key] = (p, [sid])
+            elif p == out[key][0]:
+                out[key][1].append(sid)
     return out
 
 
 def build_daily_report(nz, shops_by_id, prices, y_prices, now,
                        my_devices=None, my_shops=None):
-    shop_filter = set(my_shops) if my_shops else None
-    bases = {"-".join(k.split("-")[:2]) for k in (my_devices or [])}
-    today = best_by_capacity(nz, prices, shop_filter)
-    yesterday = best_by_capacity(nz, y_prices, shop_filter) if y_prices else {}
-    scope = "★業者内の最高値" if shop_filter else "各社最高値"
-    title = f"**☀️ 今日の買取価格一覧** ({now.strftime('%Y/%m/%d')} 11:00 時点・{scope})"
-    if bases:
-        title += "\n📱 マイ端末のみ表示(全機種はサイトでどうぞ)"
-    lines = [title]
-    lines.append("")
+    """毎朝のレポート。マイ端末をカラーごとに、★業者ごとの価格を並べる。"""
+    shops = list(my_shops) if my_shops else list(prices.keys())
+    title = f"☀️ **今日の買取価格一覧** ({now.strftime('%Y/%m/%d')} 11:00 時点)"
+    sub = []
+    if my_devices:
+        sub.append("📱 マイ端末")
+    if my_shops:
+        sub.append("★お気に入り業者")
+    if sub:
+        title += "\n" + " × ".join(sub) + "の価格です"
+    lines = [title, ""]
+
     for sr in nz.series:
-        n0 = len(lines)
         for cap in sr["capacities"]:
-            base = f"{sr['id']}-{int(cap)}"
-            if base not in today:
-                continue
-            if bases and base not in bases:
-                continue
-            p, sid = today[base]
             cap_i = int(cap)
             cap_s = f"{cap_i // 1024}TB" if cap_i >= 1024 else f"{cap_i}GB"
-            line = (f"**{sr['name']} {cap_s}**  {fmt_yen(p)}"
-                    f" ({shops_by_id[sid]['name']})")
-            if base in yesterday:
-                d = p - yesterday[base][0]
-                mark = "🟢▲" if d > 0 else "🔴▼"
-                line += f"  前日比 {mark}{d:+,}円" if d else "  前日比 ⚪±0"
-            lines.append(line)
-        if len(lines) > n0:
-            lines.append("")   # その機種で1行以上出た時だけ区切りを入れる
+            colors = list((sr.get("colors") or {}).keys()) or [None]
+            block = []
+            for col in colors:
+                key = f"{sr['id']}-{cap_i}" + (f"-{col}" if col else "")
+                if my_devices and key not in my_devices:
+                    continue
+                # ★業者ごとの価格(高い順)
+                rows = []
+                for sid in shops:
+                    p = prices.get(sid, {}).get(key)
+                    if p is None:
+                        continue
+                    rows.append((p, sid))
+                if not rows:
+                    continue
+                rows.sort(key=lambda t: -t[0])
+                cname = (sr.get("colors") or {}).get(col, col) if col else None
+                if cname:
+                    block.append(f"　**{cname}**")
+                # 単独トップの時だけ👑(同額で並んでいる時は付けない)
+                top_alone = len(rows) > 1 and rows[0][0] > rows[1][0]
+                for i, (p, sid) in enumerate(rows):
+                    name = shops_by_id.get(sid, {}).get("name", sid)
+                    mark = "👑" if i == 0 and top_alone else "　"
+                    line = f"　{mark}{name} **{fmt_yen(p)}**"
+                    yp = (y_prices or {}).get(sid, {}).get(key)
+                    if yp is not None:
+                        d = p - yp
+                        if d > 0:
+                            line += f"  前日比 🟢▲+{d:,}円🔥"
+                        elif d < 0:
+                            line += f"  前日比 🔴▼{d:,}円"
+                        else:
+                            line += "  前日比 ⚪±0"
+                    block.append(line)
+            if block:
+                lines.append(f"**{sr['name']} {cap_s}**")
+                lines.extend(block)
+                lines.append("")
+
     ng = [s for s in shops_by_id.values() if not s.get("_ok", True)]
     if ng:
-        lines.append("⚠️ 価格取得に失敗した業者: " + "、".join(s["name"] for s in ng))
+        lines.append("⚠️ 価格取得に失敗した業者: "
+                     + "、".join(s["name"] for s in ng))
+        lines.append("(その業者は前回取得できた価格を表示しています)")
     return "\n".join(lines)
 
 
