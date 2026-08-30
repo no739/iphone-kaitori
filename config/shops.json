@@ -17,10 +17,10 @@
     { "id": "twinkle",  "name": "トゥインクル",    "url": "https://twinkle-mobile.com/" },
     { "id": "kaden",    "name": "家電市場",        "url": "https://www.kaden-ichiba.com/" },
     { "id": "rakuen",   "name": "買取楽園",        "url": "https://www.keitairakuen.com/" },
-    { "id": "space",    "name": "携帯空間",        "url": "https://www.keitaispace.co.jp/" },
+    { "id": "space",    "name": "携帯空間",        "url": "https://www.keitaispace.co.jp/", "partial": true },
     { "id": "guest",    "name": "ゲストモバイル",  "url": "https://www.guestmobile.jp/" },
     { "id": "best1",    "name": "買取ベストワン",  "url": "https://top1mobile.net/keitai.html" },
     { "id": "star",     "name": "買取スター",      "url": "https://www.kaitoristar.com/mobile" },
-    { "id": "god",      "name": "ケータイゴッド",  "url": "https://keitai-god.com/price/index.php" }
+    { "id": "god",      "name": "ケータイゴッド",  "url": "https://keitai-god.com/price/index.php", "partial": true }
   ]
 }
