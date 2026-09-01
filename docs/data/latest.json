@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-01T17:20:01+09:00",
+ "updated": "2026-09-01T19:19:09+09:00",
  "series": [
   {
    "id": "17promax",
@@ -136,8 +136,8 @@
    "id": "dragon",
    "name": "ドラゴンモバイル",
    "url": "https://mobileone.co.jp/",
-   "ok": false,
-   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://mobileone.co.jp/sell.html?cat1=140&cat2=144&page=1\", waiting until \"domcontentloaded\"\n"
+   "ok": true,
+   "error": null
   },
   {
    "id": "mobasute",
@@ -151,7 +151,7 @@
    "name": "アキモバ",
    "url": "https://www.akiba-mobile.co.jp/",
    "ok": false,
-   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.akiba-mobile.co.jp/price/softbank.html\", waiting until \"domcontentloaded\"\n"
+   "error": "商品を1件も抽出できませんでした(ページ構造変更の可能性)"
   },
   {
    "id": "twinkle",
@@ -185,8 +185,8 @@
    "id": "guest",
    "name": "ゲストモバイル",
    "url": "https://www.guestmobile.jp/",
-   "ok": false,
-   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.guestmobile.jp/iphone%e8%b2%b7%e5%8f%96%e4%be%a1%e6%a0%bc/\", waiting until \"domcontentloaded\"\n"
+   "ok": true,
+   "error": null
   },
   {
    "id": "best1",
@@ -1411,13 +1411,13 @@
    "17pro-512-orange": 212500,
    "17-512-lavender": 159000,
    "17promax-1024-silver": 254500,
-   "17pro-1024-silver": 233000,
+   "17pro-1024-silver": 234000,
    "17-512-sage": 159000,
    "17promax-1024-blue": 254500,
-   "17pro-1024-blue": 233000,
+   "17pro-1024-blue": 234000,
    "17-512-black": 159000,
    "17promax-1024-orange": 254500,
-   "17pro-1024-orange": 233000,
+   "17pro-1024-orange": 234000,
    "17-512-white": 159000,
    "17promax-2048-silver": 293000,
    "17-512-mistblue": 159000,
@@ -1730,9 +1730,9 @@
    "17promax-2048-silver": 293000,
    "17-256-lavender": 138000,
    "17-256-sage": 138000,
-   "17-256-mistblue": 138000,
-   "17-256-white": 138000,
-   "17-256-black": 138000,
+   "17-256-mistblue": 138500,
+   "17-256-white": 138500,
+   "17-256-black": 138500,
    "17-512-lavender": 159500,
    "17-512-sage": 159500,
    "17-512-mistblue": 159500,
@@ -1761,7 +1761,7 @@
    "17pro-1024-orange": 233000,
    "17pro-1024-blue": 233000,
    "17pro-1024-silver": 233000,
-   "17promax-256-orange": 197500,
+   "17promax-256-orange": 197600,
    "17promax-512-orange": 227500,
    "17promax-512-blue": 227500,
    "17promax-512-silver": 227500,
@@ -2021,26 +2021,26 @@
   }
  },
  "shop_updated": {
-  "shouten": "2026-09-01T17:20:01+09:00",
+  "shouten": "2026-09-01T19:19:09+09:00",
   "kaikyo": "2026-08-30T18:50:04+09:00",
-  "ichome": "2026-09-01T17:20:01+09:00",
-  "mix": "2026-09-01T17:20:01+09:00",
-  "somurie": "2026-09-01T17:20:01+09:00",
+  "ichome": "2026-09-01T19:19:09+09:00",
+  "mix": "2026-09-01T19:19:09+09:00",
+  "somurie": "2026-09-01T19:19:09+09:00",
   "enoking": "2026-08-30T18:50:04+09:00",
-  "morimori": "2026-09-01T17:20:01+09:00",
-  "rudeya": "2026-09-01T17:20:01+09:00",
-  "wiki": "2026-09-01T17:20:01+09:00",
-  "homura": "2026-09-01T17:20:01+09:00",
-  "dragon": "2026-09-01T15:23:38+09:00",
+  "morimori": "2026-09-01T19:19:09+09:00",
+  "rudeya": "2026-09-01T19:19:09+09:00",
+  "wiki": "2026-09-01T19:19:09+09:00",
+  "homura": "2026-09-01T19:19:09+09:00",
+  "dragon": "2026-09-01T19:19:09+09:00",
   "mobasute": "2026-08-30T18:50:04+09:00",
   "akimoba": "2026-08-31T19:10:11+09:00",
-  "twinkle": "2026-09-01T17:20:01+09:00",
-  "kaden": "2026-09-01T17:20:01+09:00",
-  "rakuen": "2026-09-01T17:20:01+09:00",
+  "twinkle": "2026-09-01T19:19:09+09:00",
+  "kaden": "2026-09-01T19:19:09+09:00",
+  "rakuen": "2026-09-01T19:19:09+09:00",
   "space": "2026-08-30T18:50:04+09:00",
-  "guest": "2026-09-01T15:23:38+09:00",
-  "best1": "2026-09-01T17:20:01+09:00",
-  "star": "2026-09-01T17:20:01+09:00",
+  "guest": "2026-09-01T19:19:09+09:00",
+  "best1": "2026-09-01T19:19:09+09:00",
+  "star": "2026-09-01T19:19:09+09:00",
   "god": "2026-08-30T18:50:04+09:00"
  },
  "yesterday": {
