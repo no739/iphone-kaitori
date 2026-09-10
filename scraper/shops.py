@@ -35,7 +35,9 @@ _ALT = "|".join(re.escape(w) for w in _ALL_COLOR_WORDS)
 _DEDUCT_RE = re.compile(
     rf"((?:{_ALT})(?:\s*[/・]\s*(?:{_ALT}))*)\s*[-−▲]\s*([0-9,]+)", re.I)
 _WORD_RE = re.compile(_ALT, re.I)
-_ABS_RE = re.compile(rf"({_ALT})\s+([0-9]{{2,3}},[0-9]{{3}})", re.I)
+# 「橙 178,000」に加えて「橙/青 191,500」のような複数色まとめ表記にも対応する
+_ABS_RE = re.compile(
+    rf"((?:{_ALT})(?:\s*[/・]\s*(?:{_ALT}))*)\s+([0-9]{{2,3}},[0-9]{{3}})", re.I)
 
 
 def expand_color_deductions(text, base_price):
@@ -48,7 +50,8 @@ def expand_color_deductions(text, base_price):
         for word in _WORD_RE.findall(m.group(1)):
             ov[word] = base_price - int(m.group(2).replace(",", ""))
     for m in _ABS_RE.finditer(text):
-        ov[m.group(1)] = int(m.group(2).replace(",", ""))
+        for word in _WORD_RE.findall(m.group(1)):
+            ov[word] = int(m.group(2).replace(",", ""))
     clean = _ABS_RE.sub("", _DEDUCT_RE.sub("", text)).strip()
     offer = {"text": clean, "price": base_price}
     if ov:
