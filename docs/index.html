@@ -771,7 +771,9 @@ function buildTable(){
           let t = "";
           if(!c.since && c.atLeast){
             const a = new Date(c.atLeast + "T00:00:00");
-            t = a.toLocaleString("ja-JP",{month:"numeric",day:"numeric"}) + "〜";
+            const md = a.toLocaleString("ja-JP",{month:"numeric",day:"numeric"});
+            // 記録の最古日に張り付いている = それ以前は分からない
+            t = (c.atLeast === DB.stable_floor ? md + "以前〜" : md + "〜");
           }
           if(c.since){
             const sd = new Date(c.since);

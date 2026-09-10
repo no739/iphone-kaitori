@@ -298,9 +298,11 @@ def build_daily_report(nz, shops_by_id, prices, y_prices, now,
 
 def compute_stable_since(prices, daily_dir, today_str):
     """一度も変動を観測していないセルについて「少なくともいつから同じ値か」を
-    日次スナップショットから遡って求める。表の「±0 ◯◯〜」表示に使う。"""
+    日次スナップショットから遡って求める。表の「±0 ◯◯〜」表示に使う。
+    戻り値は ({key: 日付}, 最古の日付)。最古に張り付いた分はそれ以前が不明なので、
+    サイト側で「◯/◯以前〜」と表示させる。"""
     if not os.path.isdir(daily_dir):
-        return {}
+        return {}, None
     snaps = []
     for f in sorted(os.listdir(daily_dir)):
         if not f.endswith(".json") or f[:-5] > today_str:
@@ -318,7 +320,7 @@ def compute_stable_since(prices, daily_dir, today_str):
                 since = date
             if since:
                 out[f"{sid}|{key}"] = since
-    return out
+    return out, (snaps[0][0] if snaps else None)
 
 
 def main():
@@ -438,6 +440,7 @@ def main():
         # 前日データがまだ無い間(運用初日)は当日朝のスナップショットで代用
         y_snap = load_json(os.path.join(daily_dir, f"{today_str}.json"), {})
 
+    stable_since, stable_floor = compute_stable_since(prices, daily_dir, today_str)
     save_json(latest_path, {
         "updated": ts,
         "series": nz.series,
@@ -449,7 +452,8 @@ def main():
         "shop_updated": shop_updated,
         "yesterday": y_snap.get("prices", {}),
         "daily_files": daily_files,
-        "stable_since": compute_stable_since(prices, daily_dir, today_str),
+        "stable_since": stable_since,
+        "stable_floor": stable_floor,   # これと同じ日付は「それ以前は記録なし」の意味
     })
     save_json(os.path.join(DATA, "changes.json"), changes_log)
     print(f"done: changes={len(changes)} daily={daily}")
