@@ -422,9 +422,13 @@ def main():
 
     today_str = now.strftime("%Y-%m-%d")
     daily_dir = os.path.join(DATA, "daily")
+    snap_path = os.path.join(daily_dir, f"{today_str}.json")
+    # 取得時刻を持たない古い形式なら作り直す(据え置き表示を時刻で出すため)
+    if not load_json(snap_path, {}).get("shop_updated"):
+        daily = True
     if daily:
         # 11時のレポート通知は送らない。サイトの前日比に使うスナップショットだけ保存する
-        save_json(os.path.join(daily_dir, f"{today_str}.json"),
+        save_json(snap_path,
                   {"date": today_str, "updated": ts,
                    "shop_updated": shop_updated, "prices": prices})
 
@@ -435,9 +439,11 @@ def main():
     # セルごとの「最後に動いた時刻」は履歴が流れても失わないよう別に持つ
     lc_path = os.path.join(DATA, "last_change.json")
     last_change = load_json(lc_path, {})
-    for c in changes:
-        last_change[f"{c['shop']}|{c['key']}"] = {"ts": c["ts"],
-                                                  "d": c["new"] - c["old"]}
+    # 変更履歴(新しい順)に残っている精密な時刻を取り込む。過去分の埋め戻しも兼ねる
+    for c in changes_log:
+        k = f"{c['shop']}|{c['key']}"
+        if k not in last_change or c["ts"] > last_change[k].get("ts", ""):
+            last_change[k] = {"ts": c["ts"], "d": c["new"] - c["old"]}
     save_json(lc_path, last_change)
 
     daily_files = sorted(os.listdir(daily_dir))[-30:] if os.path.isdir(daily_dir) else []
