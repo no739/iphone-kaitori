@@ -1,4 +1,12 @@
 {
- "devices": ["17promax-256-silver", "17air-256-skyblue", "17air-256-gold", "17-256-black"],
- "shops": ["shouten", "ichome"]
+ "devices": [
+  "17promax-256-silver",
+  "17air-256-skyblue",
+  "17air-256-gold",
+  "17-256-black"
+ ],
+ "shops": [
+  "shouten",
+  "ichome"
+ ]
 }
