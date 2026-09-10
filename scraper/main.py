@@ -296,6 +296,31 @@ def build_daily_report(nz, shops_by_id, prices, y_prices, now,
     return "\n".join(lines)
 
 
+def compute_stable_since(prices, daily_dir, today_str):
+    """一度も変動を観測していないセルについて「少なくともいつから同じ値か」を
+    日次スナップショットから遡って求める。表の「±0 ◯◯〜」表示に使う。"""
+    if not os.path.isdir(daily_dir):
+        return {}
+    snaps = []
+    for f in sorted(os.listdir(daily_dir)):
+        if not f.endswith(".json") or f[:-5] > today_str:
+            continue
+        snap = load_json(os.path.join(daily_dir, f), {})
+        if snap.get("prices"):
+            snaps.append((f[:-5], snap["prices"]))
+    out = {}
+    for sid, cur in prices.items():
+        for key, p in cur.items():
+            since = None
+            for date, snap in reversed(snaps):  # 新しい日から遡り、値が違ったら止める
+                if snap.get(sid, {}).get(key) != p:
+                    break
+                since = date
+            if since:
+                out[f"{sid}|{key}"] = since
+    return out
+
+
 def main():
     args = sys.argv[1:]
     dry = "--dry" in args
@@ -396,7 +421,15 @@ def main():
 
     # ---- 保存 (サイト用データ) ----
     changes_log = load_json(os.path.join(DATA, "changes.json"), [])
-    changes_log = (changes + changes_log)[:300]
+    changes_log = (changes + changes_log)[:1200]
+
+    # セルごとの「最後に動いた時刻」は履歴が流れても失わないよう別に持つ
+    lc_path = os.path.join(DATA, "last_change.json")
+    last_change = load_json(lc_path, {})
+    for c in changes:
+        last_change[f"{c['shop']}|{c['key']}"] = {"ts": c["ts"],
+                                                  "d": c["new"] - c["old"]}
+    save_json(lc_path, last_change)
 
     daily_files = sorted(os.listdir(daily_dir))[-30:] if os.path.isdir(daily_dir) else []
     y_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -416,6 +449,7 @@ def main():
         "shop_updated": shop_updated,
         "yesterday": y_snap.get("prices", {}),
         "daily_files": daily_files,
+        "stable_since": compute_stable_since(prices, daily_dir, today_str),
     })
     save_json(os.path.join(DATA, "changes.json"), changes_log)
     print(f"done: changes={len(changes)} daily={daily}")
