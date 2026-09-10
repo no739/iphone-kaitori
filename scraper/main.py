@@ -386,20 +386,16 @@ def main():
             save_json(seen_path, sorted(seen | {t for t, _ in fresh}))
 
     if new_failures:
+        # 通知はしない(取得失敗はサイト側に警告表示が出るのでログだけ残す)
         names = "、".join(shops_by_id[s]["name"] for s in new_failures)
-        errs = "\n".join(f"- {shops_by_id[s]['name']}: {status[s]['error']}"
-                         for s in new_failures)
-        discord.send(f"⚠️ **価格取得に失敗しました**: {names}\n{errs}\n"
-                     "(サイト構造が変わった可能性があります)")
+        print(f"[取得失敗] {names}")
+        for sid in new_failures:
+            print(f"  - {shops_by_id[sid]['name']}: {status[sid]['error']}")
 
     today_str = now.strftime("%Y-%m-%d")
     daily_dir = os.path.join(DATA, "daily")
     if daily:
-        y_str = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-        y_snap = load_json(os.path.join(daily_dir, f"{y_str}.json"), {})
-        discord.send(build_daily_report(nz, shops_by_id, prices,
-                                        y_snap.get("prices", {}), now,
-                                        my_devices, my_shops), mention=True)
+        # 11時のレポート通知は送らない。サイトの前日比に使うスナップショットだけ保存する
         save_json(os.path.join(daily_dir, f"{today_str}.json"),
                   {"date": today_str, "prices": prices})
 

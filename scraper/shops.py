@@ -305,31 +305,28 @@ def mix():
 # ---------------------------------------------------------------- 買取商店
 @shop("shouten")
 def shouten():
-    """/keitai ページに全機種のカード(カラー別)。新品/中古の2価格、先頭が新品。"""
-    soup = _soup(get_html("https://www.kaitorishouten-co.jp/keitai"))
+    """サイトがReact化しHTMLに価格が無いため公開APIから取得(category_id=7=スマホ)。
+    prices の label が「新品」= 未開封の買取価格。"""
     offers = []
-    seen = set()
-    for el in soup.select("h4.item-title"):
-        name = el.get_text(" ", strip=True)
-        if "iPhone" not in name:
-            continue
-        node = el
-        prices = []
-        for _ in range(8):
-            node = node.parent
-            if node is None:
-                break
-            prices = node.select(".item-price")
-            if prices:
-                break
-        if not prices:
-            continue
-        from .normalize import yen
-        p = yen(prices[0].get_text(strip=True))
-        if not p or (name, p) in seen:
-            continue
-        seen.add((name, p))
-        offers.append({"text": name, "price": p, "cond": "新品未開封"})
+    for page in range(1, 6):
+        url = ("https://www.kaitorishouten-co.jp/api/v1/products"
+               f"?per_page=100&perPage=100&page={page}&enhanced=1&category_id=7")
+        try:
+            data = json.loads(get_html(url))
+        except (ValueError, TypeError):
+            break
+        items = data.get("items") or []
+        for it in items:
+            name = it.get("name") or ""
+            if "iPhone" not in name:
+                continue
+            for pr in it.get("prices") or []:
+                if pr.get("label") == "新品" and pr.get("amount"):
+                    offers.append({"text": name, "price": pr["amount"],
+                                   "cond": "新品未開封"})
+                    break
+        if not items or page * 100 >= (data.get("total") or 0):
+            break
     return offers
 
 
@@ -548,10 +545,10 @@ def kaden():
 # ---------------------------------------------------------------- アキモバ
 @shop("akimoba")
 def akimoba():
-    """softbank.html が実質SIMフリー買取価格の一覧テーブル。"""
-    soup = _soup(get_html("https://www.akiba-mobile.co.jp/price/softbank.html"))
+    """price/iphone.html の一覧テーブル(機種名/状態/買取価格の3列)。"""
+    soup = _soup(get_html("https://www.akiba-mobile.co.jp/price/iphone.html"))
     offers = []
-    for tr in soup.select("table.list tr"):
+    for tr in soup.select("table.price tr"):
         tds = tr.find_all("td")
         if len(tds) != 3:
             continue
