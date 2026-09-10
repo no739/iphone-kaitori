@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>iPhone 買取価格比較</title>
-<meta name="description" content="新品未開封iPhoneの買取価格を20社横断で比較。2時間ごとに自動更新。">
+<meta name="description" content="新品未開封iPhoneの買取価格を21社横断で比較。こまめに自動更新。">
 <style>
 :root{
   --bg:#ffffff; --bg2:#f5f5f7; --fg:#1d1d1f; --fg2:#6e6e73; --line:#d2d2d7;
@@ -362,7 +362,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 
 <header class="hero" id="top">
   <h1>iPhone 買取価格比較</h1>
-  <p class="sub" id="subline">新品未開封の買取価格を、2時間ごとに。</p>
+  <p class="sub" id="subline">新品未開封の買取価格を、こまめに。</p>
   <p class="meta" id="updated">読み込み中…</p>
   <div class="cta">
     <a class="btn" href="#table">価格を見る</a>
@@ -411,7 +411,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
     </div>
     <div class="card">
       <h3>参加するメリット</h3>
-      <p>📈 <b>値上げの瞬間を逃さない</b><br>2時間おきのチェックで価格が動いたら即通知。「どの機種が・どの業者で・いくら→いくらになったか」まで届くので、<b>一番高いタイミングで売れます</b>。</p>
+      <p>📈 <b>値上げの瞬間を逃さない</b><br>こまめなチェックで価格が動いたら即通知。「どの機種が・どの業者で・いくら→いくらになったか」まで届くので、<b>一番高いタイミングで売れます</b>。</p>
       <p style="margin-top:10px">📱 <b>持ってる端末のことだけ届く</b><br>表で端末に「＋」、業者に「☆」を付けておくと、通知は<b>マイ端末×お気に入り業者の変動だけ</b>に絞られます。関係ない機種の速報でチャンネルが埋まりません。</p>
       <p style="margin-top:10px">☀️ <b>毎朝11時に相場が分かる</b><br>マイ端末の最高値と「どの業者が最高値か」「前日からいくら動いたか」が毎朝まとめて届きます。サイトを見に行かなくても売り時が判断できます。</p>
     </div>
@@ -420,7 +420,7 @@ footer .links{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
 
 <section class="block" id="about">
   <h2>このサイトについて</h2>
-  <p>11時〜19時の2時間おき(1日5回)に各買取業者の公式サイトから新品未開封iPhoneの買取価格を自動取得しています。緑のセルはその行の最高値。各社セルの▲▼は前回巡回からの変動、最高値の下の「前日▲▼」は前日(毎朝11時に記録)の最高値との比較です。</p>
+  <p>11時〜19時に各買取業者の公式サイトから新品未開封iPhoneの買取価格を自動取得しています(9月は30分おき・それ以外の月は1時間おき)。緑のセルはその行の最高値。各社セルの▲▼は前回巡回からの変動、最高値の下の「前日▲▼」は前日(毎朝11時に記録)の最高値との比較です。各社セルの「±0 ◯/◯〜」は、その日からずっと同じ価格という意味です。</p>
   <p>新しいiPhoneが発売されたら <code>config/models.json</code> に1機種追記するだけで自動的に追跡対象になります。</p>
 </section>
 
@@ -481,6 +481,8 @@ const fmt = n => n == null ? "—" : n.toLocaleString("ja-JP");
 let DB = null, filter = "all";
 
 let LAST_CHANGE = {};  // "shop|key" -> {d, ts} 直近24時間の最後の変動
+// 巡回間隔: 9月(新型発表で相場が動く月)は30分おき、それ以外は1時間おき
+const INTERVAL_LABEL = (new Date().getMonth() + 1) === 9 ? "30分おき" : "1時間おき";
 let LAST_MOVE = {};    // "shop|key" -> ts  期間を問わない最後の変動(据え置き表示の起点)
 async function boot(){
   const [res, resCh, resLc] = await Promise.all([
@@ -518,9 +520,9 @@ async function boot(){
   const up = new Date(DB.updated);
   document.getElementById("updated").innerHTML =
     "更新日時: " + up.toLocaleString("ja-JP",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) +
-    '<span class="note">11〜19時の2時間おきに自動更新</span>';
+    `<span class="note">11〜19時の${INTERVAL_LABEL}に自動更新</span>`;
   document.getElementById("subline").textContent =
-    `新品未開封。${DB.shops.length}社を、2時間ごとに。`;
+    `新品未開封。${DB.shops.length}社を、${INTERVAL_LABEL}。`;
   buildPicker(); buildTable(); buildFavBar(); buildChanges(); buildFooter();
   document.getElementById("loading").style.display = "none";
   pullPrefs();   // 共有保存所の★(マイ端末/業者)を取り込み、変化があれば再描画
