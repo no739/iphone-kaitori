@@ -770,10 +770,17 @@ function buildTable(){
           // 変動なし: いつから据え置きか。観測が無ければ日次スナップショットで遡る
           let t = "";
           if(!c.since && c.atLeast){
-            const a = new Date(c.atLeast + "T00:00:00");
-            const md = a.toLocaleString("ja-JP",{month:"numeric",day:"numeric"});
-            // 記録の最古日に張り付いている = それ以前は分からない
-            t = (c.atLeast === DB.stable_floor ? md + "以前〜" : md + "〜");
+            // 日付のみ(旧形式)と、取得時刻入り(新形式)の両方を受ける
+            const hasTime = c.atLeast.length > 10;
+            const a = new Date(hasTime ? c.atLeast : c.atLeast + "T00:00:00");
+            const sameDay = a.toDateString() === new Date(DB.updated).toDateString();
+            const md = a.toLocaleString("ja-JP", (hasTime && sameDay)
+              ? {hour:"2-digit",minute:"2-digit"}
+              : (hasTime ? {month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}
+                         : {month:"numeric",day:"numeric"}));
+            // 記録の最古まで遡っている = それ以前は分からない
+            const atFloor = (c.atLeast || "").slice(0,10) === (DB.stable_floor || "").slice(0,10);
+            t = atFloor ? md + "以前〜" : md + "〜";
           }
           if(c.since){
             const sd = new Date(c.since);
