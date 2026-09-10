@@ -370,19 +370,14 @@ def main():
         discord.send(msg, mention=True)
     elif changes:
         print(f"変更{len(changes)}件はすべてマイ端末×★業者の対象外のため通知なし")
-    # 未対応の新機種を検知したら一度だけ通知(検知済みリストで重複防止)
+    # 未対応の新機種を検知したら記録だけ残す(通知はしない)
     if unknowns:
         seen_path = os.path.join(DATA, "new_models_seen.json")
         seen = set(load_json(seen_path, []))
         fresh = sorted({(t, s2) for t, s2 in unknowns if t not in seen})
         if fresh:
-            lines = ["🔥🔥🔥 **新機種を検知しました!** 🔥🔥🔥", ""]
-            lines.append("📱 業者サイトにこんな商品が出はじめています:")
-            for _t, sample in fresh[:6]:
-                lines.append(f"　✨ {sample}")
-            lines.append("")
-            lines.append("👉 比較表に追加するには、Claudeに「**新機種に対応して**」と伝えてください")
-            discord.send("\n".join(lines), mention=True)
+            # 通知はしない。検知はログと new_models_seen.json にだけ残す
+            print("[新機種検知] " + " / ".join(s2 for _t, s2 in fresh[:6]))
             save_json(seen_path, sorted(seen | {t for t, _ in fresh}))
 
     if new_failures:
