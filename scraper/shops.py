@@ -508,17 +508,68 @@ def rakuen():
 # ---------------------------------------------------------------- 携帯空間
 @shop("space")
 def space():
-    """product-card に未開封品価格。se=24(17シリーズ), 40(Air)。"""
-    offers = []
+    """一覧ページの価格はカラーを区別しない代表値なので、商品詳細のAPIから
+    カラー別の「未開封品」価格を取る(例: Air 256GB は blue だけ 1,000円安い)。"""
+    import requests
+
+    base = "https://www.keitaispace.co.jp/product/"
+    sess = requests.Session()
+    sess.headers.update({
+        "User-Agent": ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                       "AppleWebKit/537.36 (KHTML, like Gecko) "
+                       "Chrome/126 Safari/537.36"),
+        "X-Requested-With": "XMLHttpRequest",
+    })
+
+    # 一覧から iPhone 17系の商品ページを集める
+    products = []
     for se in ("24", "40"):
-        soup = _soup(get_html(f"https://www.keitaispace.co.jp/product/?se={se}"))
-        for card in soup.select(".product-card, .product-list-item, .product-row"):
+        soup = _soup(sess.get(f"{base}?se={se}", timeout=40).text)
+        for card in soup.select(".product-card"):
             name = card.select_one(".product-name")
-            price = card.select_one(".price_pro_news")
-            if not name or not price:
+            link = card.select_one("a[href*='pid=']")
+            if not name or not link:
                 continue
-            offers.append({"text": name.get_text(" ", strip=True) + " 未開封",
-                           "price": price.get_text(strip=True)})
+            pid = re.search(r"pid=([\w-]+)", link["href"])
+            if pid:
+                products.append((name.get_text(" ", strip=True), pid.group(1)))
+
+    offers = []
+    for name, pid in products:
+        try:
+            html = sess.get(f"{base}?pid={pid}", timeout=40).text
+        except Exception:  # noqa: BLE001
+            continue
+        soup = _soup(html)
+        tok = soup.select_one('input[name="_token"]')
+        if not tok:
+            continue
+        # 選択肢(容量/カラー/キャリア/利用制限)の option_number を集める
+        opts = {}
+        for b in soup.select(".selection-btn"):
+            for i in (1, 2, 3, 4):
+                if b.has_attr(f"data-oid{i}"):
+                    opts.setdefault(i, []).append(
+                        (b.get("data-option_number"), b.get_text(strip=True)))
+        if not opts.get(2):
+            continue
+        cap = (opts.get(1) or [("", "")])[0][0]
+        carrier = next((o for o, l in opts.get(3, []) if l.startswith("store")), "")
+        limit = next((o for o, l in opts.get(4, []) if l.startswith("〇")), "")
+        for color_no, color_label in opts[2]:
+            data = {"product_id": pid, "action": "ajax_get_conditions",
+                    "_token": tok["value"], "option1": cap, "option2": color_no,
+                    "option3": carrier, "option4": limit}
+            try:
+                j = sess.post(base, files={k: (None, v) for k, v in data.items()},
+                              timeout=40).json()
+            except Exception:  # noqa: BLE001
+                continue
+            for c in j.get("condition_list") or []:
+                if c.get("title") == "未開封品" and c.get("price"):
+                    offers.append({"text": f"{name} {color_label} 未開封",
+                                   "price": c["price"], "cond": "新品未開封"})
+                    break
     return offers
 
 
@@ -572,8 +623,18 @@ def mobasute():
             price = cell.select_one(".price--unopened")
             if not name or not price:
                 continue
-            offers.append({"text": name.get_text(" ", strip=True) + " 未開封",
-                           "price": price.get_text(strip=True)})
+            # 「ブルー-3000円(未開封)」のようなカラー別の減額注記を取り込む
+            note = cell.select_one(".p-priceTable__caution")
+            note = note.get_text(" ", strip=True) if note else ""
+            note = " ".join(m.group(0) for m in _DEDUCT_RE.finditer(note))
+            from .normalize import yen
+            p0 = yen(price.get_text(strip=True))
+            if not p0:
+                continue
+            text = f"{name.get_text(' ', strip=True)} 未開封 {note}".strip()
+            for of in expand_color_deductions(text, p0):
+                of["cond"] = "新品未開封"
+                offers.append(of)
     return offers
 
 
