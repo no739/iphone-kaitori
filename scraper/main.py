@@ -309,15 +309,16 @@ def compute_stable_since(prices, daily_dir, today_str):
             continue
         snap = load_json(os.path.join(daily_dir, f), {})
         if snap.get("prices"):
-            snaps.append((f[:-5], snap["prices"]))
+            snaps.append((f[:-5], snap))
     out = {}
     for sid, cur in prices.items():
         for key, p in cur.items():
             since = None
             for date, snap in reversed(snaps):  # 新しい日から遡り、値が違ったら止める
-                if snap.get(sid, {}).get(key) != p:
+                if snap["prices"].get(sid, {}).get(key) != p:
                     break
-                since = date
+                # その日にその業者を実際に取得した時刻(無ければ日付のみ)
+                since = (snap.get("shop_updated", {}) or {}).get(sid) or date
             if since:
                 out[f"{sid}|{key}"] = since
     return out, (snaps[0][0] if snaps else None)
@@ -383,8 +384,13 @@ def main():
 
     # ---- 通知 ----
     # サイトで登録された「マイ端末/★業者」(家族共有)。未登録なら全件通知
-    my_devices, my_shops = discord.fetch_prefs()
+    prefs_cache = os.path.join(DATA, "prefs_cache.json")
+    my_devices, my_shops, prefs_ok = discord.fetch_prefs(prefs_cache)
     notify_changes = changes
+    if not prefs_ok:
+        # 絞り込み条件が分からない状態で全件通知すると、お気に入り以外まで飛ぶ
+        print("お気に入り設定を取得できないため今回の通知は見送る")
+        notify_changes = []
     if my_devices:
         notify_changes = [c for c in notify_changes if c["key"] in my_devices]
     if my_shops:
@@ -419,7 +425,8 @@ def main():
     if daily:
         # 11時のレポート通知は送らない。サイトの前日比に使うスナップショットだけ保存する
         save_json(os.path.join(daily_dir, f"{today_str}.json"),
-                  {"date": today_str, "prices": prices})
+                  {"date": today_str, "updated": ts,
+                   "shop_updated": shop_updated, "prices": prices})
 
     # ---- 保存 (サイト用データ) ----
     changes_log = load_json(os.path.join(DATA, "changes.json"), [])

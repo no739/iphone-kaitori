@@ -11,22 +11,51 @@ import urllib.request
 ROOT = os.path.join(os.path.dirname(__file__), "..")
 
 
-def fetch_prefs():
-    """サイトで登録された「マイ端末/★業者」(家族共有)を取得。
-    失敗・未登録時は空リスト=絞り込みなしで従来どおり全件通知。"""
+def fetch_prefs(cache_path=None):
+    """サイトで登録された「マイ端末/★業者」(家族共有)を取得する。
+
+    戻り値は (devices, shops, ok)。取得できた内容は cache_path に保存し、
+    次に取得へ失敗した時はそれを使う。取得も復元もできなければ ok=False を返し、
+    呼び出し側は通知を見送る(絞り込めないまま全件通知しないため)。
+    """
     reg = os.environ.get("WEBHOOK_REGISTRY_URL", "").strip()
     if not reg:
-        return [], []
-    try:
-        req = urllib.request.Request(f"{reg}?action=prefs",
-                                     headers={"User-Agent": "kaitori-bot"})
-        with urllib.request.urlopen(req, timeout=20) as r:
-            j = json.loads(r.read().decode())
-        if j.get("ok"):
-            return list(j.get("devices") or []), list(j.get("shops") or [])
-    except Exception as e:  # noqa: BLE001
-        print("prefs取得失敗(絞り込みなしで続行):", e)
-    return [], []
+        return [], [], True  # 登録所を使わない構成では従来どおり絞り込みなし
+
+    last_err = None
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(f"{reg}?action=prefs",
+                                         headers={"User-Agent": "kaitori-bot"})
+            with urllib.request.urlopen(req, timeout=45) as r:
+                j = json.loads(r.read().decode())
+            if j.get("ok"):
+                devices = list(j.get("devices") or [])
+                shops = list(j.get("shops") or [])
+                if cache_path:
+                    try:
+                        with open(cache_path, "w", encoding="utf-8") as f:
+                            json.dump({"devices": devices, "shops": shops},
+                                      f, ensure_ascii=False, indent=1)
+                    except OSError:
+                        pass
+                return devices, shops, True
+            last_err = j
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            if attempt < 2:
+                time.sleep(3)
+    print("prefs取得失敗:", last_err)
+
+    if cache_path and os.path.exists(cache_path):
+        try:
+            with open(cache_path, encoding="utf-8") as f:
+                c = json.load(f)
+            print("  → 前回取得した設定で絞り込む")
+            return list(c.get("devices") or []), list(c.get("shops") or []), True
+        except (OSError, ValueError):
+            pass
+    return [], [], False
 
 
 def registry_urls():
