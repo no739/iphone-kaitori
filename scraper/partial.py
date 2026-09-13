@@ -92,6 +92,13 @@ def main():
             print(f"[skip] {sid}: {e}")
         except Exception as e:  # noqa: BLE001
             print(f"[NG] {sid}: {e}")
+            # 失敗理由を残す(前回価格はそのまま)。サイト側が「Macスリープ中?」と誤表示しないため
+            old = load_json(path, {})
+            if old.get("prices"):
+                old["error"] = f"{e}"[:200]
+                old["error_at"] = now
+                save_json(path, old)
+                changed.append(sid)
 
     if changed:
         _git("add", "docs/data/partial")

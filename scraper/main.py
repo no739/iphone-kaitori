@@ -78,9 +78,13 @@ def scrape_all(shops):
                     pass
                 prices[sid] = snap["prices"]
                 observed[sid] = snap.get("updated")
-                status[sid] = {"ok": fresh,
-                               "error": None if fresh
-                               else "ローカル取得が4時間以上止まっています(Macスリープ中?)"}
+                if snap.get("error"):
+                    # ローカル側で取得に失敗した(業者が価格非表示など)。理由をそのまま出す
+                    status[sid] = {"ok": False, "error": snap["error"]}
+                else:
+                    status[sid] = {"ok": fresh,
+                                   "error": None if fresh
+                                   else "ローカル取得が4時間以上止まっています(Macスリープ中?)"}
                 print(f"[{'ok' if fresh else 'NG'}] {s['name']}: "
                       f"partial {snap.get('updated', '?')}")
             else:
