@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-13T03:27:32+09:00",
+ "updated": "2026-09-13T12:32:09+09:00",
  "prices": {
   "17promax-256-silver": 194500,
   "17promax-256-orange": 194500,
@@ -44,7 +44,5 @@
   "17air-1024-white": 153500,
   "17air-1024-gold": 153500,
   "17air-1024-skyblue": 149500
- },
- "error": "エノキング: 価格を抽出できず (url=https://newenoking-kaitori.com/products?cat=0bb59efb-68a5-4b2e-b380-fca0fc593a88 商品名=108件 問い合わせ表示=True ログアウト表示=True)",
- "error_at": "2026-09-13T12:02:10+09:00"
+ }
 }
