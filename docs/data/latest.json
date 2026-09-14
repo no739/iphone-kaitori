@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-14T17:22:17+09:00",
+ "updated": "2026-09-14T17:33:51+09:00",
  "series": [
   {
    "id": "17promax",
@@ -136,8 +136,8 @@
    "id": "dragon",
    "name": "ドラゴンモバイル",
    "url": "https://mobileone.co.jp/",
-   "ok": true,
-   "error": null
+   "ok": false,
+   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://mobileone.co.jp/sell.html?cat1=140&cat2=144&page=1\", waiting until \"domcontentloaded\"\n"
   },
   {
    "id": "mobasute",
@@ -150,8 +150,8 @@
    "id": "akimoba",
    "name": "アキモバ",
    "url": "https://www.akiba-mobile.co.jp/",
-   "ok": true,
-   "error": null
+   "ok": false,
+   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.akiba-mobile.co.jp/price/iphone.html\", waiting until \"domcontentloaded\"\n"
   },
   {
    "id": "twinkle",
@@ -171,8 +171,8 @@
    "id": "rakuen",
    "name": "買取楽園",
    "url": "https://www.keitairakuen.com/",
-   "ok": false,
-   "error": "商品を1件も抽出できませんでした(ページ構造変更の可能性)"
+   "ok": true,
+   "error": null
   },
   {
    "id": "space",
@@ -185,8 +185,8 @@
    "id": "guest",
    "name": "ゲストモバイル",
    "url": "https://www.guestmobile.jp/",
-   "ok": true,
-   "error": null
+   "ok": false,
+   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.guestmobile.jp/iphone%e8%b2%b7%e5%8f%96%e4%be%a1%e6%a0%bc/\", waiting until \"domcontentloaded\"\n"
   },
   {
    "id": "best1",
@@ -410,8 +410,8 @@
   },
   "enoking": {
    "17promax-256-silver": 197001,
-   "17promax-256-orange": 196501,
-   "17promax-256-blue": 196501,
+   "17promax-256-orange": 197001,
+   "17promax-256-blue": 197001,
    "17promax-512-silver": 223000,
    "17promax-512-orange": 223000,
    "17promax-512-blue": 223000,
@@ -443,11 +443,11 @@
    "17air-256-black": 136500,
    "17air-256-white": 136500,
    "17air-256-gold": 136500,
-   "17air-256-skyblue": 136500,
+   "17air-256-skyblue": 130000,
    "17air-512-black": 146500,
    "17air-512-white": 146500,
    "17air-512-gold": 146500,
-   "17air-512-skyblue": 146500,
+   "17air-512-skyblue": 138000,
    "17air-1024-black": 153500,
    "17air-1024-white": 153500,
    "17air-1024-gold": 153500,
@@ -904,16 +904,16 @@
    "17air-1024-black": 153000
   },
   "space": {
-   "17promax-256-silver": 197201,
+   "17promax-256-silver": 196500,
    "17promax-256-orange": 196200,
    "17promax-256-blue": 196200,
-   "17promax-512-silver": 197201,
+   "17promax-512-silver": 196500,
    "17promax-512-orange": 196200,
    "17promax-512-blue": 196200,
-   "17promax-1024-silver": 197201,
+   "17promax-1024-silver": 196500,
    "17promax-1024-orange": 196200,
    "17promax-1024-blue": 196200,
-   "17promax-2048-silver": 197201,
+   "17promax-2048-silver": 196500,
    "17promax-2048-orange": 196200,
    "17promax-2048-blue": 196200,
    "17pro-256-silver": 178500,
@@ -2049,27 +2049,27 @@
   }
  },
  "shop_updated": {
-  "shouten": "2026-09-14T17:22:17+09:00",
-  "kaikyo": "2026-09-14T17:02:03+09:00",
-  "ichome": "2026-09-14T17:22:17+09:00",
-  "mix": "2026-09-14T17:22:17+09:00",
-  "somurie": "2026-09-14T17:22:17+09:00",
-  "enoking": "2026-09-14T17:02:03+09:00",
-  "morimori": "2026-09-14T17:22:17+09:00",
-  "rudeya": "2026-09-14T17:22:17+09:00",
-  "wiki": "2026-09-14T17:22:17+09:00",
-  "homura": "2026-09-14T17:22:17+09:00",
+  "shouten": "2026-09-14T17:33:51+09:00",
+  "kaikyo": "2026-09-14T17:32:03+09:00",
+  "ichome": "2026-09-14T17:33:51+09:00",
+  "mix": "2026-09-14T17:33:51+09:00",
+  "somurie": "2026-09-14T17:33:51+09:00",
+  "enoking": "2026-09-14T17:32:03+09:00",
+  "morimori": "2026-09-14T17:33:51+09:00",
+  "rudeya": "2026-09-14T17:33:51+09:00",
+  "wiki": "2026-09-14T17:33:51+09:00",
+  "homura": "2026-09-14T17:33:51+09:00",
   "dragon": "2026-09-14T17:22:17+09:00",
-  "mobasute": "2026-09-14T17:02:03+09:00",
+  "mobasute": "2026-09-14T17:32:03+09:00",
   "akimoba": "2026-09-14T17:22:17+09:00",
-  "twinkle": "2026-09-14T17:22:17+09:00",
-  "kaden": "2026-09-14T17:22:17+09:00",
-  "rakuen": "2026-09-14T17:04:14+09:00",
-  "space": "2026-09-14T17:02:03+09:00",
+  "twinkle": "2026-09-14T17:33:51+09:00",
+  "kaden": "2026-09-14T17:33:51+09:00",
+  "rakuen": "2026-09-14T17:33:51+09:00",
+  "space": "2026-09-14T17:32:03+09:00",
   "guest": "2026-09-14T17:22:17+09:00",
-  "best1": "2026-09-14T17:22:17+09:00",
-  "star": "2026-09-14T17:22:17+09:00",
-  "god": "2026-09-14T17:02:03+09:00"
+  "best1": "2026-09-14T17:33:51+09:00",
+  "star": "2026-09-14T17:33:51+09:00",
+  "god": "2026-09-14T17:32:03+09:00"
  },
  "yesterday": {
   "shouten": {
