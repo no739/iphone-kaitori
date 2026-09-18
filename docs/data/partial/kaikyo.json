@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-17T19:32:06+09:00",
+ "updated": "2026-09-18T10:32:06+09:00",
  "prices": {
   "17promax-256-orange": 196000,
   "17promax-256-blue": 196000,
@@ -44,7 +44,5 @@
   "17-512-sage": 161000,
   "17-512-white": 161000,
   "17-512-black": 161000
- },
- "error": "Page.goto: net::ERR_CONNECTION_REFUSED at https://www.mobile-ichiban.com/Prod/1/01/37\nCall log:\n  - navigating to \"https://www.mobile-ichiban.com/Prod/1/01/37\", waiting until \"domcontentloaded\"\n",
- "error_at": "2026-09-18T10:02:06+09:00"
+ }
 }
