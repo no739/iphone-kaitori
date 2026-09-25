@@ -44,5 +44,7 @@
   "17air-1024-white": 153500,
   "17air-1024-gold": 153500,
   "17air-1024-skyblue": 149500
- }
+ },
+ "error": "Page.goto: net::ERR_NETWORK_CHANGED at https://newenoking-kaitori.com/login\nCall log:\n  - navigating to \"https://newenoking-kaitori.com/login\", waiting until \"domcontentloaded\"\n",
+ "error_at": "2026-09-25T13:02:33+09:00"
 }

@@ -44,5 +44,7 @@
   "17air-256-gold": 127000,
   "17air-256-white": 127000,
   "17air-256-black": 127000
- }
+ },
+ "error": "Page.goto: net::ERR_INTERNET_DISCONNECTED at https://keitai-god.com/price/index.php?ci=11&mi=451\nCall log:\n  - navigating to \"https://keitai-god.com/price/index.php?ci=11&mi=451\", waiting until \"domco",
+ "error_at": "2026-09-25T13:02:33+09:00"
 }
