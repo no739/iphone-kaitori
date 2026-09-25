@@ -33,11 +33,15 @@ _ALL_COLOR_WORDS = sorted({w for ws in COLOR_WORDS.values() for w in ws},
                           key=len, reverse=True)
 _ALT = "|".join(re.escape(w) for w in _ALL_COLOR_WORDS)
 _DEDUCT_RE = re.compile(
-    rf"((?:{_ALT})(?:\s*[/・]\s*(?:{_ALT}))*)\s*[-−▲]\s*([0-9,]+)", re.I)
+    rf"((?:{_ALT})(?:\s*[/・、,，]\s*(?:{_ALT}))*)\s*[-−▲]\s*([0-9,]+)", re.I)
 _WORD_RE = re.compile(_ALT, re.I)
 # 「橙 178,000」に加えて「橙/青 191,500」のような複数色まとめ表記にも対応する
 _ABS_RE = re.compile(
     rf"((?:{_ALT})(?:\s*[/・]\s*(?:{_ALT}))*)\s+([0-9]{{2,3}},[0-9]{{3}})", re.I)
+# 業者の書き漏れで減額の「-」が抜けた「グレイシャー11,500円」(モバイルミックス 2026-09)。
+# 色名に空白なしで金額+円が続き、基準価格の半分未満なら減額とみなす
+_NOSIGN_RE = re.compile(
+    rf"((?:{_ALT})(?:\s*[/・]\s*(?:{_ALT}))*)([0-9][0-9,]*)円", re.I)
 
 
 def expand_color_deductions(text, base_price):
@@ -46,13 +50,21 @@ def expand_color_deductions(text, base_price):
     どのカラーに対応するかの解決は runner 側(機種のカラー定義に基づく)。"""
     ov = {}
     for m in _DEDUCT_RE.finditer(text):
-        # 「ブルー/ブラック -2,000」のような複数色まとめ表記にも対応
+        # 「ブルー/ブラック -2,000」「シルバー、グレイシャー -3000」のような複数色まとめ表記にも対応
         for word in _WORD_RE.findall(m.group(1)):
             ov[word] = base_price - int(m.group(2).replace(",", ""))
     for m in _ABS_RE.finditer(text):
         for word in _WORD_RE.findall(m.group(1)):
             ov[word] = int(m.group(2).replace(",", ""))
-    clean = _ABS_RE.sub("", _DEDUCT_RE.sub("", text)).strip()
+    text2 = _ABS_RE.sub("", _DEDUCT_RE.sub("", text))
+    for m in _NOSIGN_RE.finditer(text2):
+        amt = int(m.group(2).replace(",", ""))
+        if 0 < amt < base_price / 2:
+            for word in _WORD_RE.findall(m.group(1)):
+                ov[word] = base_price - amt
+    clean = _NOSIGN_RE.sub(
+        lambda m: "" if 0 < int(m.group(2).replace(",", "")) < base_price / 2 else m.group(0),
+        text2).strip()
     offer = {"text": clean, "price": base_price}
     if ov:
         offer["ov"] = ov
@@ -68,7 +80,7 @@ def _soup(html):
 def kaikyo():
     """モバイル一番(海峡通信)。カテゴリページに新品/中古価格のカード。"""
     offers = []
-    for cat in ("37", "36", "35", "34"):  # ProMax / Pro / Air / 17
+    for cat in ("40", "39", "37", "36", "35", "34"):  # 18PM / 18Pro / ProMax / Pro / Air / 17
         html = get_html(f"https://www.mobile-ichiban.com/Prod/1/01/{cat}")
         soup = _soup(html)
         for lb in soup.select("label[id^=NewPrice_]"):
@@ -123,6 +135,8 @@ def enoking():
     if not (has_state or (email and password)):
         raise SkipShop("エノキングの認証情報が未設定")
     cats = {  # カテゴリID(サイトのナビから取得)
+        "18promax": "4907aadc-9ebb-4d12-a226-ba86c7eb5205",
+        "18pro": "8753c762-09b7-40ff-a8ad-7a8a293729bd",
         "17promax": "ef369420-782f-4343-a8fe-12cc875842ab",
         "17pro": "a97f234d-feb0-4c64-ad65-1c1174f43f12",
         "17": "1f133399-5164-42a5-83e5-370e3e882f0f",
@@ -170,7 +184,7 @@ def enoking():
                       wait_until="domcontentloaded", timeout=60000)
             page.wait_for_timeout(3000)
             soup = _soup(page.content())
-            for el in soup.find_all(string=re.compile(r"iPhone ?(17|Air)")):
+            for el in soup.find_all(string=re.compile(r"iPhone ?(1[78]|Air)")):
                 name = el.strip()
                 if len(name) < 12 or "GB" not in name and "TB" not in name:
                     continue
@@ -194,7 +208,7 @@ def enoking():
         if not offers:
             # 診断情報付きで失敗させる(ログインは通ったが価格が見えない等)
             html = page.content()
-            n_names = len(re.findall(r"iPhone ?17|iPhone ?Air", html))
+            n_names = len(re.findall(r"iPhone ?1[78]|iPhone ?Air", html))
             raise RuntimeError(
                 f"エノキング: 価格を抽出できず (url={page.url} "
                 f"商品名={n_names}件 問い合わせ表示={'問い合わせ' in html} "
@@ -214,7 +228,7 @@ def enoking():
 def ichome():
     """SPAだがJSON API(/api/keitai/listPage)が直接叩ける。"""
     offers = []
-    for kw in ("iPhone 17", "iPhone Air"):
+    for kw in ("iPhone 18", "iPhone 17", "iPhone Air"):
         import urllib.parse
         url = ("https://www.1-chome.com/api/keitai/listPage?accCode=&page=1&size=200"
                f"&keyword={urllib.parse.quote(kw)}&isImpo=false&isCampaign=false"
@@ -259,7 +273,7 @@ def morimori():
     """機種別カテゴリの div.product-item。通常買取価格を採用。"""
     import time
     offers = []
-    for cat in ("0301066", "0301065", "0301064", "0301063"):  # PM/Pro/Air/17
+    for cat in ("0301070", "0301069", "0301066", "0301065", "0301064", "0301063"):  # 18PM/18Pro/PM/Pro/Air/17
         for page in (1, 2, 3):
             time.sleep(1.2)  # 連続アクセスで接続拒否されることがあるため間隔を空ける
             url = f"https://www.morimori-kaitori.jp/category/{cat}?page={page}"
@@ -364,7 +378,7 @@ def homura():
     """Ransack検索(q[name_cont])で商品カード。【未開封】/【開封open】が名前に付く。"""
     import urllib.parse
     offers = []
-    for query in ("iPhone 17", "iPhone Air"):
+    for query in ("iPhone 18", "iPhone 17", "iPhone Air"):
         for page in range(1, 8):
             params = {"q[name_cont]": query, "page": page}
             url = "https://kaitori-homura.com/products?" + urllib.parse.urlencode(params)
@@ -425,7 +439,7 @@ def star():
 def god():
     """price/index.php?ci=11&mi=N の #price_table。APPLEストア版が最高値。"""
     offers = []
-    for mi in ("451", "452", "454", "453"):  # PM / Pro / 17 / Air
+    for mi in ("502", "501", "451", "452", "454", "453"):  # 18PM / 18Pro / PM / Pro / 17 / Air
         html = get_html(f"https://keitai-god.com/price/index.php?ci=11&mi={mi}")
         for name, price in re.findall(
                 r"<td>(iPhone[^<]+)</td>\s*<td>([\d,]+)円</td>", html):
@@ -521,9 +535,9 @@ def space():
         "X-Requested-With": "XMLHttpRequest",
     })
 
-    # 一覧から iPhone 17系の商品ページを集める
+    # 一覧から iPhone 17・18系の商品ページを集める
     products = []
-    for se in ("24", "40"):
+    for se in ("643", "24", "40"):  # 643=iPhone18シリーズ
         soup = _soup(sess.get(f"{base}?se={se}", timeout=40).text)
         for card in soup.select(".product-card"):
             name = card.select_one(".product-name")
@@ -579,7 +593,7 @@ def kaden():
     """検索結果テーブル: プライム価格 / 新品価格 / 中古価格。新品価格を採用。"""
     import urllib.parse
     offers = []
-    for q in ("iPhone 17", "iPhone Air"):
+    for q in ("iPhone 18", "iPhone 17", "iPhone Air"):
         url = "https://www.kaden-ichiba.com/item/key/" + urllib.parse.quote(q)
         soup = _soup(get_html(url))
         for tr in soup.find_all("tr"):
@@ -616,7 +630,7 @@ def akimoba():
 def mobasute():
     """pastec.net。機種別ページの価格表に未開封品買取価格。"""
     offers = []
-    for cid in ("555", "556", "557", "558"):  # 17Pro / 17ProMax / 17 / Air
+    for cid in ("643", "644", "555", "556", "557", "558"):  # 18Pro / 18ProMax / 17Pro / 17ProMax / 17 / Air
         soup = _soup(get_html(f"https://pastec.net/iphone?series_child_id={cid}"))
         for cell in soup.select(".p-priceTable__inner"):
             name = cell.select_one(".p-priceTable__name span")
@@ -668,7 +682,7 @@ def wiki():
 def rudeya():
     """検索結果ページに product-card。名前に状態(未開封/SIMフリー)込み。"""
     offers = []
-    for q in ("iPhone%2017", "iPhone%20Air"):
+    for q in ("iPhone%2018", "iPhone%2017", "iPhone%20Air"):
         for offset in (0, 20, 40, 60):
             url = f"https://kaitori-rudeya.com/search/index/{q}/-/-/-"
             if offset:
@@ -692,7 +706,7 @@ def rudeya():
 def somurie():
     """Next.jsだがサーバーレンダリング済み。サブカテゴリごとに商品カード。"""
     offers = []
-    for sub in ("3", "4", "5", "6"):  # 17 / 17 Pro / 17 Pro Max / Air
+    for sub in ("55", "3", "4", "5", "6"):  # 18 Pro・Pro Max / 17 / 17 Pro / 17 Pro Max / Air
         html = get_html(f"https://somurie-kaitori.com/products?category=1&subcategory={sub}")
         soup = _soup(html)
         for p in soup.select("p.text-price-red"):

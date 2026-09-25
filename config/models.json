@@ -2,6 +2,18 @@
   "_comment": "新型iPhoneが出たらここに追記するだけで追跡対象になります。capacities のキーはGB表記(1TB=1024, 2TB=2048)、値はApple税込定価(円)。colors を空にするとカラー集約(最高値)で追跡します。",
   "series": [
     {
+      "id": "18promax",
+      "name": "iPhone 18 Pro Max",
+      "colors": { "black": "ブラック", "silver": "シルバー", "glacier": "グレイシャー", "burgundy": "バーガンディ" },
+      "capacities": { "256": 239800, "512": 274800, "1024": 344800, "2048": 449800 }
+    },
+    {
+      "id": "18pro",
+      "name": "iPhone 18 Pro",
+      "colors": { "black": "ブラック", "silver": "シルバー", "glacier": "グレイシャー", "burgundy": "バーガンディ" },
+      "capacities": { "256": 219800, "512": 254800, "1024": 324800, "2048": 429800 }
+    },
+    {
       "id": "17promax",
       "name": "iPhone 17 Pro Max",
       "colors": { "orange": "オレンジ", "blue": "ブルー", "silver": "シルバー" },

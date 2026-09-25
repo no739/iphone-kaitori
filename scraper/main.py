@@ -395,15 +395,14 @@ def main():
         # 絞り込み条件が分からない状態で全件通知すると、お気に入り以外まで飛ぶ
         print("お気に入り設定を取得できないため今回の通知は見送る")
         notify_changes = []
-    if my_devices:
-        notify_changes = [c for c in notify_changes if c["key"] in my_devices]
-    if my_shops:
-        notify_changes = [c for c in notify_changes if c["shop"] in my_shops]
+    # 通知は「マイ端末×★業者」だけ。どちらかが未登録なら何も送らない
+    # (以前は未登録=全件通知に戻っていて、マイ端末を外したのに通知が来ていた 2026-09-25)
+    notify_changes = [c for c in notify_changes
+                      if c["key"] in my_devices and c["shop"] in my_shops]
     if notify_changes:
         msg = build_change_message(nz, shops_by_id, notify_changes, now,
                                    prev_updated, prices, my_shops)
-        if my_devices or my_shops:
-            msg += "\n(📱マイ端末×★業者に絞って通知中。全変更はサイトの「最近の変更」へ)"
+        msg += "\n(📱マイ端末×★業者に絞って通知中。全変更はサイトの「最近の変更」へ)"
         discord.send(msg, mention=True)
     elif changes:
         print(f"変更{len(changes)}件はすべてマイ端末×★業者の対象外のため通知なし")

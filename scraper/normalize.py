@@ -21,6 +21,9 @@ COLOR_WORDS = {
     "mistblue": ["ミストブルー", "mistblue", "ブルー", "blue", "青"],
     "sage":     ["セージ", "sage", "グリーン", "green", "緑"],
     "lavender": ["ラベンダー", "lavender", "パープル", "purple", "紫"],
+    # iPhone 18 Pro系(2026-09)。楽園は 紫=バーガンディ・青=グレイシャー と略記する
+    "glacier":  ["グレイシャー", "グレイシャ-", "glacier", "青"],  # 「グレイシャ-」は一丁目の誤記
+    "burgundy": ["バーガンディ", "burgundy", "紫"],
 }
 
 
