@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-25T12:32:06+09:00",
+ "updated": "2026-09-25T13:32:06+09:00",
  "prices": {
   "17promax-2048-orange": 270000,
   "17promax-2048-blue": 270000,
@@ -27,11 +27,11 @@
   "17-512-sage": 162000,
   "17-512-white": 162000,
   "17-512-black": 162000,
-  "17-256-lavender": 144000,
-  "17-256-mistblue": 144000,
-  "17-256-sage": 144000,
-  "17-256-white": 144000,
-  "17-256-black": 144000,
+  "17-256-lavender": 143000,
+  "17-256-mistblue": 143000,
+  "17-256-sage": 143000,
+  "17-256-white": 143000,
+  "17-256-black": 143000,
   "17air-1024-skyblue": 147000,
   "17air-1024-gold": 147000,
   "17air-1024-white": 147000,
@@ -44,7 +44,5 @@
   "17air-256-gold": 127000,
   "17air-256-white": 127000,
   "17air-256-black": 127000
- },
- "error": "Page.goto: net::ERR_INTERNET_DISCONNECTED at https://keitai-god.com/price/index.php?ci=11&mi=451\nCall log:\n  - navigating to \"https://keitai-god.com/price/index.php?ci=11&mi=451\", waiting until \"domco",
- "error_at": "2026-09-25T13:02:33+09:00"
+ }
 }
