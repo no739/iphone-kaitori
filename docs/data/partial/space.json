@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-03T19:02:04+09:00",
+ "updated": "2026-10-04T10:02:01+09:00",
  "prices": {
   "18promax-256-burgundy": 233000,
   "18promax-256-glacier": 221200,
@@ -9,10 +9,6 @@
   "18promax-512-glacier": 221200,
   "18promax-512-silver": 220500,
   "18promax-512-black": 221200,
-  "18promax-1024-burgundy": 233000,
-  "18promax-1024-glacier": 221200,
-  "18promax-1024-silver": 220500,
-  "18promax-1024-black": 221200,
   "18promax-2048-burgundy": 233000,
   "18promax-2048-glacier": 221200,
   "18promax-2048-silver": 220500,
