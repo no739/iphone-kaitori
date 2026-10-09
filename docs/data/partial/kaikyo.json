@@ -76,5 +76,7 @@
   "17-512-sage": 158000,
   "17-512-white": 158000,
   "17-512-black": 158000
- }
+ },
+ "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.mobile-ichiban.com/Prod/1/01/40\", waiting until \"domcontentloaded\"\n",
+ "error_at": "2026-10-09T19:02:05+09:00"
 }
