@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-13T03:56:35+09:00",
+ "updated": "2026-10-13T10:04:02+09:00",
  "series": [
   {
    "id": "18promax",
@@ -105,8 +105,8 @@
    "id": "kaikyo",
    "name": "海峡通信",
    "url": "https://www.mobile-ichiban.com/",
-   "ok": false,
-   "error": "ローカル取得が4時間以上止まっています(Macスリープ中?)"
+   "ok": true,
+   "error": null
   },
   {
    "id": "ichome",
@@ -141,7 +141,7 @@
    "name": "森森買取",
    "url": "https://www.morimori-kaitori.jp/category/03",
    "ok": false,
-   "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://www.morimori-kaitori.jp/category/0301070?page=1\", waiting until \"domcontentloaded\"\n"
+   "error": "商品を1件も抽出できませんでした(ページ構造変更の可能性)"
   },
   {
    "id": "rudeya",
@@ -161,8 +161,8 @@
    "id": "homura",
    "name": "買取ホムラ",
    "url": "https://kaitori-homura.com/products",
-   "ok": true,
-   "error": null
+   "ok": false,
+   "error": "商品を1件も抽出できませんでした(ページ構造変更の可能性)"
   },
   {
    "id": "dragon",
@@ -175,8 +175,8 @@
    "id": "mobasute",
    "name": "モバステ",
    "url": "https://pastec.net/iphone/",
-   "ok": false,
-   "error": "ローカル取得が4時間以上止まっています(Macスリープ中?)"
+   "ok": true,
+   "error": null
   },
   {
    "id": "akimoba",
@@ -210,8 +210,8 @@
    "id": "space",
    "name": "携帯空間",
    "url": "https://www.keitaispace.co.jp/",
-   "ok": false,
-   "error": "ローカル取得が4時間以上止まっています(Macスリープ中?)"
+   "ok": true,
+   "error": null
   },
   {
    "id": "guest",
@@ -238,8 +238,8 @@
    "id": "god",
    "name": "ケータイゴッド",
    "url": "https://keitai-god.com/price/index.php",
-   "ok": false,
-   "error": "ローカル取得が4時間以上止まっています(Macスリープ中?)"
+   "ok": true,
+   "error": null
   }
  ],
  "prices": {
@@ -399,9 +399,9 @@
   },
   "ichome": {
    "18pro-256-glacier": 213000,
-   "18pro-512-black": 238000,
+   "18pro-512-black": 235000,
    "18pro-512-silver": 229000,
-   "18pro-512-glacier": 238000,
+   "18pro-512-glacier": 235000,
    "18pro-512-burgundy": 249000,
    "18pro-1024-black": 295000,
    "18pro-1024-silver": 295000,
@@ -1226,10 +1226,10 @@
    "17-512-black": 156000
   },
   "kaden": {
-   "18pro-256-burgundy": 211000,
-   "18pro-256-black": 195000,
-   "18pro-256-glacier": 195000,
-   "18pro-256-silver": 191500,
+   "18pro-256-burgundy": 213000,
+   "18pro-256-black": 196000,
+   "18pro-256-glacier": 196000,
+   "18pro-256-silver": 193000,
    "18pro-512-burgundy": 244000,
    "18pro-512-black": 232000,
    "18pro-512-glacier": 232000,
@@ -1760,15 +1760,15 @@
    "18promax-256-burgundy": 246500,
    "18promax-256-glacier": 229000,
    "18promax-256-silver": 225000,
-   "18promax-256-black": 225000,
+   "18promax-256-black": 229000,
    "18promax-512-burgundy": 283000,
    "18promax-512-glacier": 267000,
    "18promax-512-silver": 263000,
    "18promax-512-black": 267000,
    "18promax-1024-burgundy": 348000,
-   "18promax-1024-glacier": 327000,
-   "18promax-1024-silver": 327000,
-   "18promax-1024-black": 327000,
+   "18promax-1024-glacier": 328000,
+   "18promax-1024-silver": 328000,
+   "18promax-1024-black": 328000,
    "18promax-2048-burgundy": 397000,
    "18promax-2048-glacier": 385000,
    "18promax-2048-silver": 385000,
@@ -2386,38 +2386,6 @@
    "17-512-black": 158000
   },
   "homura": {
-   "18promax-2048-burgundy": 397000,
-   "18promax-1024-burgundy": 348000,
-   "18promax-512-burgundy": 283000,
-   "18promax-256-burgundy": 246500,
-   "18pro-2048-burgundy": 380000,
-   "18pro-1024-burgundy": 310000,
-   "18pro-512-burgundy": 249000,
-   "18pro-256-burgundy": 213000,
-   "18promax-2048-glacier": 385000,
-   "18promax-1024-glacier": 332000,
-   "18promax-512-glacier": 267000,
-   "18promax-256-glacier": 231000,
-   "18pro-2048-glacier": 370000,
-   "18pro-1024-glacier": 295000,
-   "18pro-512-glacier": 238000,
-   "18pro-256-glacier": 196000,
-   "18pro-2048-silver": 370000,
-   "18promax-2048-black": 385000,
-   "18promax-1024-silver": 324000,
-   "18promax-2048-silver": 385000,
-   "18promax-512-silver": 260000,
-   "18promax-256-silver": 227000,
-   "18pro-1024-silver": 295000,
-   "18pro-512-silver": 229000,
-   "18pro-256-silver": 193000,
-   "18promax-1024-black": 332000,
-   "18promax-512-black": 266000,
-   "18promax-256-black": 229000,
-   "18pro-2048-black": 370000,
-   "18pro-1024-black": 295000,
-   "18pro-256-black": 196000,
-   "18pro-512-black": 238000,
    "17pro-256-orange": 166000,
    "17pro-256-silver": 172000,
    "17pro-256-blue": 170000,
@@ -3301,27 +3269,27 @@
   }
  },
  "shop_updated": {
-  "shouten": "2026-10-13T03:56:35+09:00",
-  "kaikyo": "2026-10-12T19:02:06+09:00",
-  "ichome": "2026-10-13T03:56:35+09:00",
-  "mix": "2026-10-13T03:56:35+09:00",
-  "somurie": "2026-10-13T03:56:35+09:00",
+  "shouten": "2026-10-13T10:04:02+09:00",
+  "kaikyo": "2026-10-13T10:02:05+09:00",
+  "ichome": "2026-10-13T10:04:02+09:00",
+  "mix": "2026-10-13T10:04:02+09:00",
+  "somurie": "2026-10-13T10:04:02+09:00",
   "enoking": "2026-09-28T17:02:01+09:00",
   "morimori": "2026-10-08T12:04:15+09:00",
-  "rudeya": "2026-10-13T03:56:35+09:00",
+  "rudeya": "2026-10-13T10:04:02+09:00",
   "wiki": "2026-10-08T19:03:47+09:00",
   "homura": "2026-10-13T03:56:35+09:00",
-  "dragon": "2026-10-13T03:56:35+09:00",
-  "mobasute": "2026-10-12T19:02:06+09:00",
-  "akimoba": "2026-10-13T03:56:35+09:00",
-  "twinkle": "2026-10-13T03:56:35+09:00",
-  "kaden": "2026-10-13T03:56:35+09:00",
-  "rakuen": "2026-10-13T03:56:35+09:00",
-  "space": "2026-10-12T19:02:06+09:00",
-  "guest": "2026-10-13T03:56:35+09:00",
-  "best1": "2026-10-13T03:56:35+09:00",
-  "star": "2026-10-13T03:56:35+09:00",
-  "god": "2026-10-12T19:02:06+09:00"
+  "dragon": "2026-10-13T10:04:02+09:00",
+  "mobasute": "2026-10-13T10:02:05+09:00",
+  "akimoba": "2026-10-13T10:04:02+09:00",
+  "twinkle": "2026-10-13T10:04:02+09:00",
+  "kaden": "2026-10-13T10:04:02+09:00",
+  "rakuen": "2026-10-13T10:04:02+09:00",
+  "space": "2026-10-13T10:02:05+09:00",
+  "guest": "2026-10-13T10:04:02+09:00",
+  "best1": "2026-10-13T10:04:02+09:00",
+  "star": "2026-10-13T10:04:02+09:00",
+  "god": "2026-10-13T10:02:05+09:00"
  },
  "yesterday": {
   "shouten": {
@@ -5054,9 +5022,7 @@
   "kaikyo|17-512-white": "2026-10-10T11:02:03+09:00",
   "kaikyo|17-512-black": "2026-10-10T11:02:03+09:00",
   "ichome|18pro-256-glacier": "2026-10-13T03:56:35+09:00",
-  "ichome|18pro-512-black": "2026-10-11T11:03:51+09:00",
   "ichome|18pro-512-silver": "2026-10-13T03:56:35+09:00",
-  "ichome|18pro-512-glacier": "2026-10-11T11:03:51+09:00",
   "ichome|18pro-512-burgundy": "2026-10-12T11:03:44+09:00",
   "ichome|18pro-1024-black": "2026-10-11T11:03:51+09:00",
   "ichome|18pro-1024-silver": "2026-10-11T11:03:51+09:00",
@@ -5857,10 +5823,6 @@
   "twinkle|17-512-mistblue": "2026-10-12T11:03:44+09:00",
   "twinkle|17-512-white": "2026-10-12T11:03:44+09:00",
   "twinkle|17-512-black": "2026-10-12T11:03:44+09:00",
-  "kaden|18pro-256-burgundy": "2026-10-11T11:03:51+09:00",
-  "kaden|18pro-256-black": "2026-10-11T11:03:51+09:00",
-  "kaden|18pro-256-glacier": "2026-10-11T11:03:51+09:00",
-  "kaden|18pro-256-silver": "2026-10-09T11:03:48+09:00",
   "kaden|18pro-512-burgundy": "2026-10-11T11:03:51+09:00",
   "kaden|18pro-512-black": "2026-10-11T11:03:51+09:00",
   "kaden|18pro-512-glacier": "2026-10-11T11:03:51+09:00",
