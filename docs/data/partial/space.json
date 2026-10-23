@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-22T19:02:04+09:00",
+ "updated": "2026-10-23T10:02:07+09:00",
  "prices": {
   "18promax-256-burgundy": 236000,
   "18promax-256-glacier": 228000,
@@ -17,6 +17,10 @@
   "18promax-2048-glacier": 228000,
   "18promax-2048-silver": 226000,
   "18promax-2048-black": 226000,
+  "18pro-256-burgundy": 205000,
+  "18pro-256-glacier": 198000,
+  "18pro-256-silver": 196000,
+  "18pro-256-black": 198000,
   "18pro-512-burgundy": 205000,
   "18pro-512-glacier": 198000,
   "18pro-512-silver": 196000,
@@ -41,6 +45,7 @@
   "17promax-2048-silver": 189500,
   "17promax-2048-orange": 185000,
   "17promax-2048-blue": 186000,
+  "17pro-256-silver": 175500,
   "17pro-256-blue": 177500,
   "17pro-256-orange": 168000,
   "17pro-512-silver": 175500,
