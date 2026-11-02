@@ -76,5 +76,7 @@
   "17air-1024-white": 135200,
   "17air-1024-gold": 135200,
   "17air-1024-skyblue": 133200
- }
+ },
+ "error": "HTTPSConnectionPool(host='www.keitaispace.co.jp', port=443): Read timed out. (read timeout=40)",
+ "error_at": "2026-11-02T14:02:05+09:00"
 }
