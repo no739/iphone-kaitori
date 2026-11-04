@@ -77,6 +77,6 @@
   "17air-1024-gold": 153500,
   "17air-1024-skyblue": 149500
  },
- "error": "エノキング: 価格を抽出できず (url=https://newenoking-kaitori.com/products?cat=0bb59efb-68a5-4b2e-b380-fca0fc593a88 商品名=0件 問い合わせ表示=False ログアウト表示=False)",
- "error_at": "2026-11-04T16:02:02+09:00"
+ "error": "Page.goto: Timeout 60000ms exceeded.\nCall log:\n  - navigating to \"https://newenoking-kaitori.com/login\", waiting until \"domcontentloaded\"\n",
+ "error_at": "2026-11-04T17:02:35+09:00"
 }

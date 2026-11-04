@@ -76,5 +76,7 @@
   "17air-1024-white": 135300,
   "17air-1024-gold": 135300,
   "17air-1024-skyblue": 133200
- }
+ },
+ "error": "HTTPSConnectionPool(host='www.keitaispace.co.jp', port=443): Max retries exceeded with url: /product/?se=643 (Caused by NameResolutionError(\"HTTPSConnection(host='www.keitaispace.co.jp', port=443): Fa",
+ "error_at": "2026-11-04T17:02:35+09:00"
 }
