@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-04T16:02:02+09:00",
+ "updated": "2026-11-04T18:02:06+09:00",
  "prices": {
   "18pro-256-black": 196000,
   "18pro-256-silver": 191000,
@@ -76,7 +76,5 @@
   "17air-1024-gold": 145000,
   "17air-1024-white": 145000,
   "17air-1024-black": 145000
- },
- "error": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://pastec.net/iphone?series_child_id=643\nCall log:\n  - navigating to \"https://pastec.net/iphone?series_child_id=643\", waiting until \"domcontentloaded\"\n",
- "error_at": "2026-11-04T17:02:35+09:00"
+ }
 }

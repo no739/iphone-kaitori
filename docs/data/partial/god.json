@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-04T16:02:02+09:00",
+ "updated": "2026-11-04T18:02:06+09:00",
  "prices": {
   "18promax-2048-black": 380000,
   "18promax-2048-silver": 380000,
@@ -76,7 +76,5 @@
   "17air-256-gold": 127000,
   "17air-256-white": 127000,
   "17air-256-black": 127000
- },
- "error": "Page.goto: net::ERR_NETWORK_CHANGED at https://keitai-god.com/price/index.php?ci=11&mi=502\nCall log:\n  - navigating to \"https://keitai-god.com/price/index.php?ci=11&mi=502\", waiting until \"domcontentl",
- "error_at": "2026-11-04T17:02:35+09:00"
+ }
 }
