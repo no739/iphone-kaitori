@@ -1,10 +1,6 @@
 {
- "updated": "2026-11-07T19:02:01+09:00",
+ "updated": "2026-11-08T10:02:06+09:00",
  "prices": {
-  "18promax-256-burgundy": 227500,
-  "18promax-256-glacier": 227500,
-  "18promax-256-silver": 224200,
-  "18promax-256-black": 224500,
   "18promax-512-burgundy": 227500,
   "18promax-512-glacier": 227500,
   "18promax-512-silver": 224200,
@@ -69,7 +65,6 @@
   "17air-256-gold": 134700,
   "17air-256-skyblue": 132600,
   "17air-512-black": 135000,
-  "17air-512-white": 135900,
   "17air-512-gold": 134700,
   "17air-512-skyblue": 132600,
   "17air-1024-black": 135000,
