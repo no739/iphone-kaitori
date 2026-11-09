@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-09T17:02:03+09:00",
+ "updated": "2026-11-09T18:02:06+09:00",
  "prices": {
   "18promax-256-burgundy": 228000,
   "18promax-256-glacier": 227500,
@@ -30,6 +30,7 @@
   "18pro-1024-silver": 200000,
   "18pro-1024-black": 200000,
   "18pro-2048-burgundy": 199500,
+  "18pro-2048-glacier": 200000,
   "18pro-2048-silver": 200000,
   "18pro-2048-black": 200000,
   "17promax-256-silver": 190000,
@@ -64,16 +65,16 @@
   "17-512-lavender": 139700,
   "17-512-sage": 139000,
   "17air-256-black": 135000,
-  "17air-256-white": 135900,
+  "17air-256-white": 136000,
   "17air-256-gold": 135900,
-  "17air-256-skyblue": 132500,
+  "17air-256-skyblue": 132600,
   "17air-512-black": 135000,
-  "17air-512-white": 135900,
+  "17air-512-white": 136000,
   "17air-512-gold": 135900,
-  "17air-512-skyblue": 132500,
+  "17air-512-skyblue": 132600,
   "17air-1024-black": 135000,
-  "17air-1024-white": 135900,
+  "17air-1024-white": 136000,
   "17air-1024-gold": 135900,
-  "17air-1024-skyblue": 132500
+  "17air-1024-skyblue": 132600
  }
 }
